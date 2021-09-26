@@ -1,0 +1,45 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-prod
+  namespace: default
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: "${ADMIN_EMAIL}"
+
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-prod
+
+    # ACME DNS-01 provider configurations
+    solvers:
+    - dns01:
+        cloudflare:
+          # !! Remember to create a k8s secret before
+          # kubectl create secret generic cloudflare-api-key-secret
+          apiTokenSecretRef:
+            name: cloudflare-cert-manager
+            key: api-token
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cert-prod-wildcard-chal
+  namespace: default
+spec:
+  secretName: cert-prod-wildcard-chal
+  issuerRef:
+    kind: Issuer
+    name: letsencrypt-prod
+  dnsNames:
+  - '${BASE_DOMAIN}'
+  - '*.${BASE_DOMAIN}'
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+spec:
+  defaultCertificate:
+    secretName: cert-prod-wildcard-chal

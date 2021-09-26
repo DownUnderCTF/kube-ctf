@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+
+# script to populate challenges from github repo into datastore
+# will be run by github actions
+# TODO: remove challenges that have been deleted
+
+import glob
+import sys
+import yaml
+from dateutil import parser
+from datetime import datetime
+from google.cloud import datastore
+import hashlib
+import base64
+
+KIND = 'ctf-challenge-isolated'
+
+datastore_client = datastore.Client()
+
+# grab all existing challenges
+def get_existing_challenges():
+  query = datastore_client.query(kind=KIND)
+  query.projections = ['__key__', 'revision']
+  return dict(map(lambda result: (result.key.id_or_name, result['revision']), query.fetch()))
+
+def main():
+  if len(sys.argv) < 2:
+    path = '.'
+  else:
+    path = sys.argv[1]
+
+  existing = get_existing_challenges()
+  for template_filename in glob.glob(f'{path}/*/*/kube-isolated.yml'):
+    print(f'reading {template_filename}')
+    with open(template_filename) as f:
+      data = f.read()
+      header, content = data.split('---\n', maxsplit=1)
+    
+    parsed_header = yaml.safe_load(header)
+    name = parsed_header['name']
+    revision = (base64
+      .b64encode(hashlib.sha256(data.encode('utf-8')).digest())
+      .decode('utf-8', 'ignore'))
+    
+    if existing.get(name) != revision:
+      key = datastore_client.key(KIND, name)
+      
+      challenge = datastore.Entity(key=key, exclude_from_indexes=['template', 'updated_at', 'expires'])
+      challenge['revision'] = revision
+      challenge['template'] = content
+      challenge['type'] = parsed_header.get('type', '')
+      challenge['expires'] = int(parsed_header.get('expires', '3600'))
+      challenge['available_at'] = 0 if not parsed_header['available_at'] else int(parser.parse(parsed_header['available_at']).timestamp())
+      challenge['updated_at'] = int(datetime.utcnow().timestamp())
+
+      datastore_client.put(challenge)
+      print(f'Upserted challenge {name}')
+    else:
+      print(f'Challenge unchanged {name}')
+    if name in existing:
+      del existing[name]
+
+  # delete non-existent challenges
+  # datastore_client.delete_multi([datastore_client.key(KIND, name) for name in existing])
+  
+  # log this
+  # [print(f'Deleted challenge {name}') for name in existing]
+    
+
+
+if __name__ == '__main__':
+  main()

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+ask_with_default () {
+  echo -n "$1 [$2]: " 1>&2
+  read -r value
+  if [ -z "$value" ]; then
+    echo "$2"
+  else
+    echo "$value"
+  fi
+}

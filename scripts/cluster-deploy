@@ -1,0 +1,47 @@
+#!/bin/bash
+
+source `dirname "$0"`"/util"
+
+PROJECT_ID=`gcloud config get-value project`
+CLUSTER_NAME="ctf-cluster"
+CLUSTER_ZONE="australia-southeast1-a"
+CLUSTER_VERSION="1.20.9-gke.1001"
+MACHINE_TYPE="e2-small"
+DISK_SIZE="48"
+DISK_TYPE="pd-standard"
+NUM_NODES="3"
+
+CLUSTER_NAME=`ask_with_default "Cluster Name" "$CLUSTER_NAME"`
+CLUSTER_ZONE=`ask_with_default "Cluster Zone" "$CLUSTER_ZONE"`
+CLUSTER_VERSION=`ask_with_default "Cluster Version" "$CLUSTER_VERSION"`
+MACHINE_TYPE=`ask_with_default "Machine Type" "$MACHINE_TYPE"`
+DISK_SIZE=`ask_with_default "Disk Size (GB)" "$DISK_SIZE"`
+DISK_TYPE=`ask_with_default "Disk Type (pd-standard or pd-ssd)" "$DISK_TYPE"`
+NUM_NODES=`ask_with_default "Number of Nodes" "$NUM_NODES"`
+
+gcloud services enable container.googleapis.com
+
+gcloud beta container clusters create "$CLUSTER_NAME" \
+  --zone "$CLUSTER_ZONE" \
+  --no-enable-basic-auth \
+  --cluster-version "1.20.9-gke.1001" \
+  --release-channel "regular" \
+  --machine-type "$MACHINE_TYPE" \
+  --image-type "COS" \
+  --disk-type "$DISK_TYPE" \
+  --disk-size "$DISK_SIZE" \
+  --metadata disable-legacy-endpoints=true \
+  --workload-pool="$PROJECT_ID.svc.id.goog" \
+  --workload-metadata=GKE_METADATA \
+  --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" \
+  --num-nodes "$NUM_NODES" \
+  --enable-ip-alias \
+  --enable-network-policy \
+  --no-enable-master-authorized-networks \
+  --addons HorizontalPodAutoscaling,GcePersistentDiskCsiDriver \
+  --max-surge-upgrade 1 \
+  --max-unavailable-upgrade 0 \
+  --enable-shielded-nodes \
+  --node-locations "$CLUSTER_ZONE"
+
+gcloud container clusters --zone "$CLUSTER_ZONE" get-credentials "$CLUSTER_NAME"

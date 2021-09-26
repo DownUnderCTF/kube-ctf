@@ -1,0 +1,8 @@
+steps:
+- id: build
+  name: 'gcr.io/kaniko-project/executor:latest'
+  args:
+  - --destination=gcr.io/$PROJECT_ID/challenge-manager
+  - --cache=true
+  - --cache-ttl=168h
+  - --context=dir://containers/challenge-manager

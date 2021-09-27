@@ -38,5 +38,5 @@ rsa==4.7.2
 six==1.14.0
 typing-extensions==3.7.4.3
 typing-inspect==0.6.0
-urllib3==1.25.8
+urllib3==1.26.5
 webencodings==0.5.1

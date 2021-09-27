@@ -29,3 +29,8 @@ to Google Cloud Datastore. We should integrate this with GitHub actions in order
 on push.
 - Interface this with CTFd
 - TLS termination for challenges, which can be done by adding cert-manager.
+
+## Authors
+- [BlueAlder](https://github.com/BlueAlder)
+- [jordanbertasso](https://github.com/jordanbertasso)
+- [lecafard](https://github.com/lecafard)

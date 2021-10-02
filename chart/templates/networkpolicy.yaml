@@ -2,7 +2,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: block-internal
-  namespace: kube-ctf-{{ .instance }}-challenges
+  namespace: {{ .Release.Name }}-challenges
 spec:
   podSelector: {}
   policyTypes:
@@ -38,7 +38,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: block-internal
-  namespace: kube-ctf-{{ .instance }}-challenges-isolated
+  namespace: {{ .Release.Name }}-challenges-isolated
 spec:
   podSelector: {}
   policyTypes:
@@ -74,7 +74,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: allow-interaction-logs
-  namespace: kube-ctf-{{ .instance }}-challenges
+  namespace: {{ .Release.Name }}-challenges
 spec:
   podSelector:
     matchLabels:
@@ -112,7 +112,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: allow-interaction-logs
-  namespace: kube-ctf-{{ .instance }}-challenges
+  namespace: {{ .Release.Name }}-challenges-isolated
 spec:
   podSelector:
     matchLabels:

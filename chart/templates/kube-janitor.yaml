@@ -6,7 +6,7 @@ metadata:
     version: v20.10.0
     role: ctf-system
   name: kube-janitor
-  namespace: ctf-admin
+  namespace: {{ .Release.Name }}-admin
 spec:
   replicas: 1
   selector:
@@ -24,10 +24,10 @@ spec:
         # see https://github.com/hjacobs/kube-janitor/releases
         image: hjacobs/kube-janitor:20.10.0
         args:
-          - --interval=120
-          - --rules-file=/config/rules.yaml
+        - --interval=120
+        - --rules-file=/config/rules.yaml
         resources:
-          {{ limits.kube-janitor }}
+        {{ toYaml (index .Values "kube-janitor") | indent 2 }}
         securityContext:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
@@ -44,7 +44,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kube-janitor
-  namespace: ctf-admin
+  namespace: {{ .Release.Name }}-admin
 data:
   rules.yaml: |
     rules:
@@ -52,20 +52,19 @@ data:
       # clean up all isolated resources after this time, even if the user tries to extend it further
       resources:
       - "*"
-      jmespath: "metadata.namespace == 'ctf-challenges-isolated'"
+      jmespath: "metadata.namespace == '{{ .Release.Name }}-challenges-isolated'"
       ttl: 8h
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kube-janitor
-  namespace: ctf-admin
+  namespace: {{ .Release.Name }}-admin
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kube-janitor
-  namespace: ctf-admin
+  name: {{ .Release.Name }}-kube-janitor
 rules:
 - apiGroups:
   - ""
@@ -86,8 +85,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kube-janitor
-  namespace: ctf-admin
+  name: {{ .Release.Name }}-kube-janitor
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -95,4 +93,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kube-janitor
-  namespace: ctf-admin
+  namespace: {{ .Release.Name }}-admin

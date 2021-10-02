@@ -1,26 +1,26 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kube-ctf-{{ .instance }}-admin
+  name: {{ .Release.Name }}-admin
   labels:
     app.kubernetes.io/name: kube-ctf
-    app.kubernetes.io/instance: kube-ctf-{{ .instance }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: admin
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kube-ctf-{{ .instance }}-challenges
+  name: {{ .Release.Name }}-challenges
   labels:
     app.kubernetes.io/name: kube-ctf
-    app.kubernetes.io/instance: kube-ctf-{{ .instance }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: challenges
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kube-ctf-{{ .instance }}-challenges-isolated
+  name: {{ .Release.Name }}-challenges-isolated
   labels:
     app.kubernetes.io/name: kube-ctf
-    app.kubernetes.io/instance: kube-ctf-{{ .instance }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: challenges

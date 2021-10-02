@@ -1,16 +1,24 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: kube-ctf-{{ .instance }}-letsencrypt
+  name: {{ .Release.Name }}-letsencrypt
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: {{ .cert.email }}
+    email: {{ .Values.cert.email }}
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
     - dns01:
         cloudflare:
           apiTokenSecretRef:
-            name: cloudflare-cert-manager
+            name: {{ .Release.Name }}-cloudflare
             key: api-token
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-cloudflare
+  namespace: cert-manager
+data:
+  api-token: "{{ b64enc .Values.cert.cfDNSToken }}"

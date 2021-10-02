@@ -10,10 +10,8 @@ limits:
       cpu: 20m
       memory: 256Mi
 
-# name of instance, will be used to prefix namespaces
-instance: prod
-
 cert:
   email: email@example.com
+  cfDNSToken: example
   domain:
     challenges: chal.example.com

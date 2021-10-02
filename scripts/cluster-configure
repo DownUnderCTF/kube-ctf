@@ -7,24 +7,26 @@ export PROJECT_ID=`gcloud config get-value project`
 export APPENGINE_REGION=`gcloud app describe | grep -oP '^locationId: \K[\da-z-]+'`
 export BASE_DOMAIN="example.com"
 export SERVICE_ACCOUNT_CHALLENGE_MANAGER="gke-challenge-manager"
-export ADMIN_EMAIL="example@example.com"
+export KUBECTF_INSTANCE="prod"
+#export ADMIN_EMAIL="example@example.com"
 
 
 # ask the questions
 export APPENGINE_REGION=`ask_with_default "App Engine Region" "$APPENGINE_REGION"`
-export BASE_DOMAIN=`ask_with_default "Base Domain" "$BASE_DOMAIN"`
-export ADMIN_EMAIL=`ask_with_default "Admin Email Address" "$ADMIN_EMAIL"`
+export KUBECTF_INSTANCE=`ask_with_default "KubeCTF Instance (should be the same as in values.yaml)" "$KUBECTF_INSTANCE"`
+#export BASE_DOMAIN=`ask_with_default "Base Domain" "$BASE_DOMAIN"`
+#export ADMIN_EMAIL=`ask_with_default "Admin Email Address" "$ADMIN_EMAIL"`
 
-# clean up old dir
-rm -rf services/
+# # clean up old dir
+# rm -rf services/
 
-# generate configs
-for file in `find service-templates/ -type f -name "*.yml"`
-do
-  new_file="services/"`echo "$file" | cut -d'/' -f2-`
-  mkdir -p `dirname "$new_file"`
-  envsubst < "$file" > "$new_file"
-done
+# # generate configs
+# for file in `find service-templates/ -type f -name "*.yml"`
+# do
+#   new_file="services/"`echo "$file" | cut -d'/' -f2-`
+#   mkdir -p `dirname "$new_file"`
+#   envsubst < "$file" > "$new_file"
+# done
 
 # create datastore for deployment templates and create iam user
 gcloud app create --region="$APPENGINE_REGION"
@@ -37,37 +39,22 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
 
 gcloud iam service-accounts add-iam-policy-binding \
     --role roles/iam.workloadIdentityUser \
-    --member "serviceAccount:$PROJECT_ID.svc.id.goog[default/challenge-manager]" \
+    --member "serviceAccount:$PROJECT_ID.svc.id.goog[kube-ctf-$KUBECTF_INSTANCE-admin/challenge-manager]" \
     "$SERVICE_ACCOUNT_CHALLENGE_MANAGER@$PROJECT_ID.iam.gserviceaccount.com"
 
 
-# build and deploy challenge manager
-gcloud services enable cloudbuild.googleapis.com
-gcloud builds submit --tag "gcr.io/$PROJECT_ID/challenge-manager" containers/challenge-manager
-
 # create namespaces
-kubectl namespace create ctf-challenges
-kubectl namespace create ctf-challenges-isolated
-kubectl namespace create ingress-treefik
+kubectl create namespace traefik
+kubectl label namespace cert-manager app.kubernetes.io/name=cert-manager   
+kubectl label namespace traefik app.kubernetes.io/name=traefik  
 
-# install the load balancer
-helm install traefik traefik/traefik --namespace ingress-traefik \
-  --set "deployment.kind=DaemonSet,providers.kubernetesCRD.allowCrossNamespaces=true,logs.general.level=INFO,logs.access.enabled=true,service.spec.externalTrafficPolicy=Local"
+# install helm stuff
+helm repo add jetstack https://charts.jetstack.io
+helm repo add traefik https://helm.traefik.io/traefik
+helm repo update
 
-# apply packages
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
-kubectl apply -k services/cert-manager
-kubectl apply -k services/kube-janitor
-kubectl apply -k services/networking
-kubectl apply -k services/challenge-manager
-
-# get ip
-while true
-do
-  sleep 2
-  ip=`kubectl get --no-headers service traefik --namespace ingress-traefik | tr -s ' ' | cut -d' ' -f4`
-  if [ "$ip" != "<pending>" ] && [ -n "$ip" ]; then
-    echo "Add an A record with $ip to *.$BASE_DOMAIN"
-    break
-  fi
-done
+# install the proxification stuff
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
+--version v1.4.0 --set installCRDs=true
+helm install traefik traefik/traefik --namespace traefik --create-namespace \
+    --set "deployment.kind=DaemonSet,providers.kubernetesCRD.allowCrossNamespaces=true,logs.general.level=INFO,logs.access.enabled=true,service.spec.externalTrafficPolicy=Local"

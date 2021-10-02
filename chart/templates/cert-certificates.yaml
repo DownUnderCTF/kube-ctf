@@ -1,0 +1,28 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kube-ctf-{{ .instance }}-cert-challenges
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: kube-ctf
+    app.kubernetes.io/instance: kube-ctf-{{ .instance }}
+spec:
+  secretName: kube-ctf-{{ .instance }}-cert-challenges
+  issuerRef:
+    kind: Issuer
+    name: letsencrypt
+  dnsNames:
+  - {{ .cert.domain.challenges }}}
+  - "*.{{ cert.domain.challenges }}"
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: kube-ctf-{{ .instance }}-cert-challenges
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: kube-ctf
+    app.kubernetes.io/instance: kube-ctf-{{ .instance }}
+spec:
+  defaultCertificate:
+    secretName: kube-ctf-{{ .instance }}-cert-challenges

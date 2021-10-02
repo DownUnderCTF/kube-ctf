@@ -18,18 +18,26 @@ spec:
       serviceAccountName: challenge-manager
       containers:
       - name: challenge-manager
-        image: {{ .Values.containerRegistry }}/services/challenge-manager:latest
+        image: gcr.io/{{ .Values.googleProject }}/services/challenge-manager:latest
         env:
           - name: KUBECTF_BASE_DOMAIN
             value: {{ .Values.domain.challenges }}
+          - name: KUBECTF_API_DOMAIN
+            value: challenge-manager.{{ .Values.domain.management }}
           - name: KUBECTF_NAMESPACE
             value: {{ .Release.Name }}-challenges-isolated
           - name: KUBECTF_MAX_OWNER_DEPLOYMENTS
             value: "4"
           - name: KUBECTF_AUTH_SECRET
-            value: "keyboard-cat"
+            valueFrom:
+              secretKeyRef:
+                name: challenge-manager
+                key: auth
           - name: KUBECTF_CONTAINER_SECRET
-            value: "keyboard-cat" 
+            valueFrom:
+              secretKeyRef:
+                name: challenge-manager
+                key: container
         resources:
 {{ toYaml (index  .Values "challenge-manager").quota | indent 10 }}
         ports:
@@ -60,9 +68,9 @@ spec:
     - web
     - websecure
   tls:
-    certResolver: default
+    secretName: {{ .Release.Name }}-cert-management
   routes:
-    - match: Host(`challenge-manager.{{ .Values.domain.challenges }}`)
+    - match: Host(`challenge-manager.{{ .Values.domain.management }}`)
       kind: Rule
       priority: 10
       middlewares:
@@ -77,7 +85,7 @@ metadata:
   name: challenge-manager
   namespace: {{ .Release.Name }}-admin
   annotations:
-    iam.gke.io/gcp-service-account: ${SERVICE_ACCOUNT_CHALLENGE_MANAGER}@${PROJECT_ID}.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: gke-challenge-manager@{{ .Values.googleProject }}.iam.gserviceaccount.com
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -116,3 +124,12 @@ subjects:
 - kind: ServiceAccount
   name: challenge-manager
   namespace: {{ .Release.Name }}-admin
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-admin
+data:
+  auth: "{{ b64enc (index .Values "challenge-manager").authSecret }}"
+  container: "{{ b64enc (index .Values "challenge-manager").containerSecret }}"

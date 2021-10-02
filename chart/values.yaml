@@ -13,6 +13,8 @@ kube-janitor:
 
 challenge-manager:
   replicas: 2
+  authSecret: keyboard-cat
+  containerSecret: keyboard-cat
   quota:
     limits:
       cpu: 72m
@@ -23,9 +25,10 @@ challenge-manager:
       
 domain:
   challenges: chal.example.com
+  management: management.example.com
 
-# root of container registry, don't include the slash
-containerRegistry: gcr.io/example
+# google project ID
+googleProject: example
 
 cert:
   email: email@example.com

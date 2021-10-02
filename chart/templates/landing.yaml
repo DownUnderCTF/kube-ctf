@@ -20,7 +20,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: nginx
-        image: {{ .Values.containerRegistry }}/services/landing:latest
+        image: gcr.io/{{ .Values.googleProject }}/services/landing:latest
         resources:
           limits:
             cpu: 100m
@@ -53,7 +53,8 @@ spec:
     - web
     - websecure
   tls:
-    certResolver: default
+    store:
+      name: {{ .Release.Name }}-cert-challenges
   routes:
     - match: HostRegexp(`{{ .Values.domain.challenges }}`, `{subdomain:[\w-]+}.{{ .Values.domain.challenges }}`)
       kind: Rule

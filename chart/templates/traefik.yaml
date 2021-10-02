@@ -22,3 +22,15 @@ spec:
     stsSeconds: 15552000
     forceSTSHeader: true
     stsIncludeSubdomains: true
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: kube-ctf
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  defaultCertificate:
+    secretName: {{ .Release.Name }}-cert-challenges

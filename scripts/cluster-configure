@@ -39,7 +39,7 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
 
 gcloud iam service-accounts add-iam-policy-binding \
     --role roles/iam.workloadIdentityUser \
-    --member "serviceAccount:$PROJECT_ID.svc.id.goog[kube-ctf-$KUBECTF_INSTANCE-admin/challenge-manager]" \
+    --member "serviceAccount:$PROJECT_ID.svc.id.goog[$KUBECTF_INSTANCE-admin/challenge-manager]" \
     "$SERVICE_ACCOUNT_CHALLENGE_MANAGER@$PROJECT_ID.iam.gserviceaccount.com"
 
 
@@ -57,4 +57,4 @@ helm repo update
 helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
 --version v1.4.0 --set installCRDs=true
 helm install traefik traefik/traefik --namespace traefik --create-namespace \
-    --set "deployment.kind=DaemonSet,providers.kubernetesCRD.allowCrossNamespaces=true,logs.general.level=INFO,logs.access.enabled=true,service.spec.externalTrafficPolicy=Local"
+    --set "deployment.kind=DaemonSet,providers.kubernetesCRD.allowCrossNamespaces=true,logs.general.level=INFO,service.spec.externalTrafficPolicy=Local"

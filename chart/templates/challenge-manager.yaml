@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-admin
+  labels:
+    kube-ctf.downunderctf.com/service: challenge-manager
+spec:
+  replicas: {{ (index  .Values "challenge-manager").replicas }}
+  selector:
+    matchLabels:
+      kube-ctf.downunderctf.com/service: challenge-manager
+  template:
+    metadata:
+      labels:
+        kube-ctf.downunderctf.com/service: challenge-manager
+    spec:
+      serviceAccountName: challenge-manager
+      containers:
+      - name: challenge-manager
+        image: {{ .Values.containerRegistry }}/services/challenge-manager:latest
+        env:
+          - name: KUBECTF_BASE_DOMAIN
+            value: {{ .Values.domain.challenges }}
+          - name: KUBECTF_NAMESPACE
+            value: {{ .Release.Name }}-challenges-isolated
+          - name: KUBECTF_MAX_OWNER_DEPLOYMENTS
+            value: "4"
+          - name: KUBECTF_AUTH_SECRET
+            value: "keyboard-cat"
+          - name: KUBECTF_CONTAINER_SECRET
+            value: "keyboard-cat" 
+        resources:
+{{ toYaml (index  .Values "challenge-manager").quota | indent 10 }}
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-admin
+  labels:
+    kube-ctf.downunderctf.com/service: challenge-manager
+spec:
+  selector:
+    kube-ctf.downunderctf.com/service: challenge-manager
+  ports:
+    - port: 3000
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-admin
+  labels:
+    kube-ctf.downunderctf.com/service: challenge-manager
+spec:
+  entryPoints:
+    - web
+    - websecure
+  tls:
+    certResolver: default
+  routes:
+    - match: Host(`challenge-manager.{{ .Values.domain.challenges }}`)
+      kind: Rule
+      priority: 10
+      middlewares:
+      - name: hsts
+      services:
+      - name: challenge-manager
+        port: 3000
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-admin
+  annotations:
+    iam.gke.io/gcp-service-account: ${SERVICE_ACCOUNT_CHALLENGE_MANAGER}@${PROJECT_ID}.iam.gserviceaccount.com
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-challenges-isolated
+rules:
+  - apiGroups:
+      - "*"
+    resources:
+      - ingresses
+      - ingressroutes
+      - pods
+      - deployments
+      - services
+      - namespaces
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-challenges-isolated
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: challenge-manager
+subjects:
+- kind: ServiceAccount
+  name: challenge-manager
+  namespace: {{ .Release.Name }}-admin

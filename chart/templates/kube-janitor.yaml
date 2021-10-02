@@ -1,10 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-janitor
+  namespace: {{ .Release.Name }}-admin
+data:
+  rules.yaml: |
+    rules:
+    - id: ctf-challenges-isolated-cleanup
+      # clean up all isolated resources after this time, even if the user tries to extend it further
+      resources:
+      - deployments
+      - ingressroutes
+      - services
+      - ingresses
+      jmespath: "metadata.namespace == '{{ .Release.Name }}-challenges-isolated'"
+      ttl: 8h
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     application: kube-janitor
     version: v20.10.0
-    role: ctf-system
   name: kube-janitor
   namespace: {{ .Release.Name }}-admin
 spec:
@@ -26,34 +43,20 @@ spec:
         args:
         - --interval=120
         - --rules-file=/config/rules.yaml
+        - --include-namespaces={{ .Release.Name }}-challenges-isolated
         resources:
-        {{ toYaml (index .Values "kube-janitor") | indent 2 }}
+{{ toYaml (index .Values "kube-janitor").quota | indent 10 }}
         securityContext:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
           runAsUser: 1000
         volumeMounts:
-          - name: config-volume
-            mountPath: /config
+        - name: config-volume
+          mountPath: /config
       volumes:
       - name: config-volume
         configMap:
           name: kube-janitor
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: kube-janitor
-  namespace: {{ .Release.Name }}-admin
-data:
-  rules.yaml: |
-    rules:
-    - id: ctf-challenges-isolated-cleanup
-      # clean up all isolated resources after this time, even if the user tries to extend it further
-      resources:
-      - "*"
-      jmespath: "metadata.namespace == '{{ .Release.Name }}-challenges-isolated'"
-      ttl: 8h
 ---
 apiVersion: v1
 kind: ServiceAccount

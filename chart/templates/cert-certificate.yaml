@@ -12,13 +12,13 @@ spec:
     kind: ClusterIssuer
     name: {{ .Release.Name }}-letsencrypt
   dnsNames:
-  - {{ .Values.cert.domain.challenges }}
-  - "*.{{ .Values.cert.domain.challenges }}"
+  - {{ .Values.domain.challenges }}
+  - "*.{{ .Values.domain.challenges }}"
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: TLSStore
 metadata:
-  name: {{ .Release.Name }}-cert-challenges
+  name: default # this has to be default in order for it to bind properly to default
   namespace: traefik
   labels:
     app.kubernetes.io/name: kube-ctf

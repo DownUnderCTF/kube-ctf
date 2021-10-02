@@ -7,20 +7,15 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: admin
 ---
+{{- $relname := .Release.Name -}}
+{{- range .Values.challengeNamespaces }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Release.Name }}-challenges
+  name: {{ $relname }}-{{ . }}
   labels:
     app.kubernetes.io/name: kube-ctf
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: challenges
+    app.kubernetes.io/instance: {{ $relname }}
+    app.kubernetes.io/component: {{ . }}
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Release.Name }}-challenges-isolated
-  labels:
-    app.kubernetes.io/name: kube-ctf
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: challenges
+{{- end }}

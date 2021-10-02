@@ -2,16 +2,36 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-limits:
-  kube-janitor:
+
+kube-janitor:
+  quota:
     limits:
       memory: 256Mi
     requests:
       cpu: 20m
       memory: 256Mi
 
+challenge-manager:
+  replicas: 2
+  quota:
+    limits:
+      cpu: 72m
+      memory: 256Mi
+    requests:
+      cpu: 36m
+      memory: 128Mi
+      
+domain:
+  challenges: chal.example.com
+
+# root of container registry, don't include the slash
+containerRegistry: gcr.io/example
+
 cert:
   email: email@example.com
   cfDNSToken: example
-  domain:
-    challenges: chal.example.com
+
+# Don't change these unless you know what you're doing
+challengeNamespaces:
+- challenges
+- challenges-isolated

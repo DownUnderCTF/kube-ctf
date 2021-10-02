@@ -1,0 +1,65 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: landing
+  namespace: {{ .Release.Name }}-challenges
+  labels:
+    role: landing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: landing
+  template:
+    metadata:
+      labels:
+        role: landing
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      containers:
+      - name: nginx
+        image: {{ .Values.containerRegistry }}/services/landing:latest
+        resources:
+          limits:
+            cpu: 100m
+            memory: 256Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: landing
+  namespace: {{ .Release.Name }}-challenges
+  labels:
+    role: landing
+spec:
+  selector:
+    role: landing
+  ports:
+    - port: 80
+---
+# default ingressroute
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: landing
+  namespace: {{ .Release.Name }}-challenges
+spec:
+  entryPoints:
+    - web
+    - websecure
+  tls:
+    certResolver: default
+  routes:
+    - match: HostRegexp(`{{ .Values.domain.challenges }}`, `{subdomain:[\w-]+}.{{ .Values.domain.challenges }}`)
+      kind: Rule
+      priority: 1000
+      middlewares:
+      - name: hsts
+      services:
+      - name: landing
+        port: 80

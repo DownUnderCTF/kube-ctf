@@ -1,44 +1,10 @@
+{{- $relname := .Release.Name -}}
+{{- range .Values.challengeNamespaces }}
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: block-internal
-  namespace: {{ .Release.Name }}-challenges
-spec:
-  podSelector: {}
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    ports:
-    - protocol: UDP
-      port: 53
-    - protocol: TCP
-      port: 53
-  - to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-        except:
-        - 0.0.0.0/8
-        - 10.0.0.0/8
-        - 100.64.0.0/10
-        - 127.0.0.0/8
-        - 169.254.0.0/16
-        - 172.16.0.0/12
-        - 192.0.0.0/24
-        - 192.0.2.0/24
-        - 192.88.99.0/24
-        - 192.168.0.0/16
-        - 198.18.0.0/15
-        - 198.51.100.0/24
-        - 203.0.113.0/24
-        - 224.0.0.0/4
-        - 240.0.0.0/4
----
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: block-internal
-  namespace: {{ .Release.Name }}-challenges-isolated
+  namespace: {{ $relname }}-{{ . }}
 spec:
   podSelector: {}
   policyTypes:
@@ -74,7 +40,7 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: allow-interaction-logs
-  namespace: {{ .Release.Name }}-challenges
+  namespace: {{ $relname }}-{{ . }}
 spec:
   podSelector:
     matchLabels:
@@ -90,58 +56,8 @@ spec:
       port: 53
   - to:
     - ipBlock:
-        cidr: 0.0.0.0/0
-        except:
-        - 0.0.0.0/8
-        - 10.0.0.0/8
-        - 100.64.0.0/10
-        - 127.0.0.0/8
-        - 169.254.0.0/16
-        - 172.16.0.0/12
-        - 192.0.0.0/24
-        - 192.0.2.0/24
-        - 192.88.99.0/24
-        - 192.168.0.0/16
-        - 198.18.0.0/15
-        - 198.51.100.0/24
-        - 203.0.113.0/24
-        - 224.0.0.0/4
-        - 240.0.0.0/4
+        cidr: 127.0.0.0/8
+    - ipBlock:
+        cidr: 169.254.0.0/16
 ---
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: allow-interaction-logs
-  namespace: {{ .Release.Name }}-challenges-isolated
-spec:
-  podSelector:
-    matchLabels:
-      kube-ctf.downunderctf.com/interaction-logs: enabled
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    ports:
-    - protocol: UDP
-      port: 53
-    - protocol: TCP
-      port: 53
-  - to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-        except:
-        - 0.0.0.0/8
-        - 10.0.0.0/8
-        - 100.64.0.0/10
-        - 127.0.0.0/8
-        - 169.254.0.0/16
-        - 172.16.0.0/12
-        - 192.0.0.0/24
-        - 192.0.2.0/24
-        - 192.88.99.0/24
-        - 192.168.0.0/16
-        - 198.18.0.0/15
-        - 198.51.100.0/24
-        - 203.0.113.0/24
-        - 224.0.0.0/4
-        - 240.0.0.0/4
+{{- end }}

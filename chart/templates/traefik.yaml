@@ -1,0 +1,24 @@
+{{- $relname := .Release.Name -}}
+{{- range .Values.challengeNamespaces }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: hsts
+  namespace: {{ $relname }}-{{ . }}
+spec:
+  headers:
+    stsSeconds: 15552000
+    forceSTSHeader: true
+    stsIncludeSubdomains: true
+---
+{{- end }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: hsts
+  namespace: {{ .Release.Name }}-admin
+spec:
+  headers:
+    stsSeconds: 15552000
+    forceSTSHeader: true
+    stsIncludeSubdomains: true

@@ -1,65 +1,60 @@
-import { AppsV1Api, CoreV1Api, KubeConfig, KubernetesObjectApi, NetworkingV1beta1Api, V1JobCondition } from "@kubernetes/client-node";
-import { BASE_DOMAIN, CONTAINER_SECRET, NAMESPACE } from "../config";
-import { Challenge } from "../lib/ChallengeConfigStore";
-import handlebars from "handlebars";
-import { apply, destroy, genertateIdentifier } from "./actions";
-
-
+import {
+  AppsV1Api,
+  KubeConfig,
+  KubernetesObjectApi,
+} from '@kubernetes/client-node';
+import {Challenge} from '../types/Challenge';
+import handlebars from 'handlebars';
+import {apply, destroy, generateIdentifier} from './actions';
 
 export class KubeClient {
   private apps: AppsV1Api;
-  private core: CoreV1Api;
-  private networking: NetworkingV1beta1Api;
   private objects: KubernetesObjectApi;
 
-  constructor(cfg: KubeConfig, private namespace: string, private domain: string, private secret: string) {
+  constructor(
+    cfg: KubeConfig,
+    private apiDomain: string,
+    private domain: string,
+    private namespace: string,
+    private secret: string
+  ) {
     this.apps = cfg.makeApiClient(AppsV1Api);
-    this.core = cfg.makeApiClient(CoreV1Api);
-    this.networking = cfg.makeApiClient(NetworkingV1beta1Api);
-    this.objects = KubernetesObjectApi.makeApiClient(kc);
-  }
-
-  private renderTemplate(challenge: Challenge, ownerId: string) {
-    const tpl = handlebars.compile(challenge.template);
-    const spec = tpl({
-      deployment_id: genertateIdentifier(challenge.name, ownerId, this.secret),
-      challenge_name: challenge.name,
-      owner_id: ownerId,
-      domain: this.domain,
-      expires: (new Date(Date.now() + challenge.expires * 1000)).toISOString().slice(0,-5) + 'Z'
-    });
-    return spec;
+    this.objects = KubernetesObjectApi.makeApiClient(cfg);
   }
 
   /**
    * Get all challenges associated with a particular owner
-   * 
+   *
    * @param ownerId Owner ID
    * @returns A list of deployments
    */
   async getDeploymentsByOwner(ownerId: string) {
-    return (await this.apps.listNamespacedDeployment(
-      this.namespace,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      `role=iso-chal,ctf-isolated/owner=${ownerId}`
-    )).body.items;
+    return (
+      await this.apps.listNamespacedDeployment(
+        this.namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        `role=iso-chal,ctf-isolated/owner=${ownerId}`
+      )
+    ).body.items;
   }
 
   async getDeploymentByNameAndOwner(name: string, ownerId: string) {
-    const identifier = genertateIdentifier(name, ownerId, this.secret);
+    const identifier = generateIdentifier(name, ownerId, this.secret);
 
-    const items = (await this.apps.listNamespacedDeployment(
-      this.namespace,
-      undefined,
-      undefined,
-      undefined,
-      `metadata.name=ctf-${identifier}`,
-      undefined,
-      1
-    )).body.items;
+    const items = (
+      await this.apps.listNamespacedDeployment(
+        this.namespace,
+        undefined,
+        undefined,
+        undefined,
+        `metadata.name=ctf-${identifier}`,
+        undefined,
+        1
+      )
+    ).body.items;
     if (items.length === 0) return null;
     return items[0];
   }
@@ -73,37 +68,45 @@ export class KubeClient {
   async deploy(challenge: Challenge, ownerId: string) {
     // Generate the template
     const spec = this.renderTemplate(challenge, ownerId);
-    return await apply(spec, this.objects);
+    return await apply(spec, this.objects, {
+      fieldManager: this.apiDomain,
+    });
   }
 
   /**
    * Resets the state of the challenge by performing a rollout restart on the deployment
    * and updating the expiry on all the objects.
-   * 
+   *
    * @param challenge Challenge spec
    * @param ownerId Owner ID
    * @returns A list of kubernetes objects
    */
   async reset(challenge: Challenge, ownerId: string) {
     const spec = this.renderTemplate(challenge, ownerId);
-    return await apply(spec, this.objects, false, true);
+    return await apply(spec, this.objects, {
+      fieldManager: this.apiDomain,
+      reset: true,
+    });
   }
 
   /**
    * Extends the expiry of the challenge.
-   * 
+   *
    * @param challenge Challenge spec
    * @param ownerId Owner ID
    * @returns A list of kubernetes objects
    */
   async extend(challenge: Challenge, ownerId: string) {
     const spec = this.renderTemplate(challenge, ownerId);
-    return await apply(spec, this.objects, true, false);
+    return await apply(spec, this.objects, {
+      fieldManager: this.apiDomain,
+      extend: true,
+    });
   }
 
   /**
-   * TODO: Destroys the challenge instance
-   * 
+   * Destroys the challenge instance
+   *
    * @param challenge Challenge spec
    * @param ownerId Owner ID
    * @returns A list of kubernetes objects
@@ -112,8 +115,19 @@ export class KubeClient {
     const spec = this.renderTemplate(challenge, ownerId);
     return await destroy(spec, this.objects);
   }
-}
 
-const kc = new KubeConfig();
-kc.loadFromDefault();
-export default new KubeClient(kc, NAMESPACE, BASE_DOMAIN, CONTAINER_SECRET);
+  private renderTemplate(challenge: Challenge, ownerId: string) {
+    const tpl = handlebars.compile(challenge.template);
+    const spec = tpl({
+      deployment_id: generateIdentifier(challenge.name, ownerId, this.secret),
+      challenge_name: challenge.name,
+      owner_id: ownerId,
+      domain: this.domain,
+      expires:
+        new Date(Date.now() + challenge.expires * 1000)
+          .toISOString()
+          .slice(0, -5) + 'Z',
+    });
+    return spec;
+  }
+}

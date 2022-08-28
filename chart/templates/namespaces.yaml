@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Release.Name }}-admin
+  name: {{ .Release.Name }}-management
   labels:
     app.kubernetes.io/name: kube-ctf
     app.kubernetes.io/instance: {{ .Release.Name }}

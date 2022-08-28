@@ -1,0 +1,19 @@
+#!/bin/bash
+
+kubectl create namespace traefik
+kubectl label namespace cert-manager app.kubernetes.io/name=cert-manager   
+kubectl label namespace traefik app.kubernetes.io/name=traefik  
+
+# install helm stuff
+helm repo add jetstack https://charts.jetstack.io
+helm repo add traefik https://helm.traefik.io/traefik
+helm repo update
+
+# install the proxification stuff
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
+    --version v1.9.1 \
+    --set installCRDs=true
+helm install traefik traefik/traefik \
+    --namespace traefik \
+    --create-namespace \
+    --set "deployment.kind=DaemonSet,providers.kubernetesCRD.allowCrossNamespaces=true,logs.general.level=INFO,service.spec.externalTrafficPolicy=Local"

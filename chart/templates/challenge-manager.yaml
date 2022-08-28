@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: challenge-manager
-  namespace: {{ .Release.Name }}-admin
+  namespace: {{ .Release.Name }}-management
   labels:
     kube-ctf.downunderctf.com/service: challenge-manager
 spec:
@@ -47,7 +47,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: challenge-manager
-  namespace: {{ .Release.Name }}-admin
+  namespace: {{ .Release.Name }}-management
   labels:
     kube-ctf.downunderctf.com/service: challenge-manager
 spec:
@@ -60,7 +60,7 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: challenge-manager
-  namespace: {{ .Release.Name }}-admin
+  namespace: {{ .Release.Name }}-management
   labels:
     kube-ctf.downunderctf.com/service: challenge-manager
 spec:
@@ -83,7 +83,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: challenge-manager
-  namespace: {{ .Release.Name }}-admin
+  namespace: {{ .Release.Name }}-management
   annotations:
     iam.gke.io/gcp-service-account: gke-challenge-manager@{{ .Values.googleProject }}.iam.gserviceaccount.com
 ---
@@ -123,13 +123,13 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: challenge-manager
-  namespace: {{ .Release.Name }}-admin
+  namespace: {{ .Release.Name }}-management
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: challenge-manager
-  namespace: {{ .Release.Name }}-admin
+  namespace: {{ .Release.Name }}-management
 data:
   auth: "{{ b64enc (index .Values "challenge-manager").authSecret }}"
   container: "{{ b64enc (index .Values "challenge-manager").containerSecret }}"

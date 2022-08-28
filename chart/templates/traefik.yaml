@@ -16,7 +16,7 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: hsts
-  namespace: {{ .Release.Name }}-admin
+  namespace: {{ .Release.Name }}-management
 spec:
   headers:
     stsSeconds: 15552000

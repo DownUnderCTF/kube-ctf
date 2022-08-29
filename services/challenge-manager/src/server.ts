@@ -95,6 +95,14 @@ export const init = async () => {
       server.decorate('container', container);
     })
   );
+  
+  server.route({
+    method: 'GET',
+    url: '/healthz',
+    handler: async (_, reply) => {
+      reply.send({ status: true });
+    }
+  });
 
   server.setErrorHandler((error, request, reply) => {
     if (error.validation) {

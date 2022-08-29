@@ -17,11 +17,11 @@ challenge-manager:
   containerSecret: keyboard-cat
   quota:
     limits:
-      cpu: 72m
-      memory: 256Mi
+      cpu: 100m
+      memory: 512Mi
     requests:
-      cpu: 36m
-      memory: 128Mi
+      cpu: 50m
+      memory: 256Mi
       
 domain:
   challenges: chal.example.com

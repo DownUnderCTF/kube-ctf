@@ -19,6 +19,18 @@ spec:
       containers:
       - name: challenge-manager
         image: gcr.io/{{ .Values.googleProject }}/services/challenge-manager:latest
+        readinessProbe:
+          httpGet:
+            port: 3000
+            path: /healthz
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            port: 3000
+            path: /healthz
+          initialDelaySeconds: 30
+          periodSeconds: 10
         env:
           - name: KUBECTF_BASE_DOMAIN
             value: {{ .Values.domain.challenges }}

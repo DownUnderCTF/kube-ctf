@@ -16,8 +16,11 @@ describe('ChallengeConfigStore', () => {
     };
     const get = jest.fn().mockImplementation(() => Promise.resolve(challenge));
 
-    const store = new ChallengeConfigStore(cache, {
-      get,
+    const store = new ChallengeConfigStore({
+      challengeConfigStoreCache: cache,
+      challengeConfigStoreRepository: {
+        get,
+      },
     });
 
     expect(await store.getChallenge('test')).toEqual(challenge);
@@ -37,8 +40,11 @@ describe('ChallengeConfigStore', () => {
     };
     const get = jest.fn().mockImplementation(() => Promise.resolve(challenge));
 
-    const store = new ChallengeConfigStore(cache, {
-      get,
+    const store = new ChallengeConfigStore({
+      challengeConfigStoreCache: cache,
+      challengeConfigStoreRepository: {
+        get,
+      },
     });
 
     expect(await store.getChallenge('test')).toBeNull();
@@ -49,8 +55,11 @@ describe('ChallengeConfigStore', () => {
     const cache = new NodeCache();
     const get = jest.fn().mockImplementation(() => Promise.resolve(null));
 
-    const store = new ChallengeConfigStore(cache, {
-      get,
+    const store = new ChallengeConfigStore({
+      challengeConfigStoreCache: cache,
+      challengeConfigStoreRepository: {
+        get,
+      },
     });
 
     expect(await store.getChallenge('test')).toBeNull();
@@ -70,8 +79,11 @@ describe('ChallengeConfigStore', () => {
     };
     const get = jest.fn().mockImplementation(() => Promise.resolve(challenge));
 
-    const store = new ChallengeConfigStore(cache, {
-      get,
+    const store = new ChallengeConfigStore({
+      challengeConfigStoreCache: cache,
+      challengeConfigStoreRepository: {
+        get,
+      },
     });
 
     expect(await store.getChallenge('test', true)).toEqual(challenge);
@@ -93,8 +105,11 @@ describe('ChallengeConfigStore', () => {
     };
     const get = jest.fn().mockImplementation(() => Promise.resolve(challenge));
 
-    const store = new ChallengeConfigStore(cache, {
-      get,
+    const store = new ChallengeConfigStore({
+      challengeConfigStoreCache: cache,
+      challengeConfigStoreRepository: {
+        get,
+      },
     });
 
     expect(await store.getChallenge('test')).toEqual(challenge);

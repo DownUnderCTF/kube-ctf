@@ -1,12 +1,26 @@
 import NodeCache from 'node-cache';
 import {Challenge} from '../../types/Challenge';
 
-export interface Repository {
+export interface ChallengeConfigStoreRepository {
   get(name: String): Promise<Challenge | null>;
 }
 
+export interface ChallengeConfigStoreParams {
+  challengeConfigStoreCache: NodeCache;
+  challengeConfigStoreRepository: ChallengeConfigStoreRepository;
+}
+
 export class ChallengeConfigStore {
-  constructor(private cache: NodeCache, private repository: Repository) {}
+  private cache: NodeCache;
+  private repository: ChallengeConfigStoreRepository;
+
+  constructor({
+    challengeConfigStoreCache,
+    challengeConfigStoreRepository,
+  }: ChallengeConfigStoreParams) {
+    this.cache = challengeConfigStoreCache;
+    this.repository = challengeConfigStoreRepository;
+  }
 
   async getChallenge(
     name: string,

@@ -17,7 +17,7 @@ const mapDeploymentToResponse = ({metadata}: V1Deployment) => ({
 });
 
 export default async function register(fastify: FastifyInstance) {
-  const {kubeClient, challengeConfigStore} = fastify;
+  const {kubeClient, challengeConfigStore} = fastify.container.cradle;
 
   fastify.addSchema({
     $id: 'challenge-manager.downunderctf.com/schema/deployments.json',

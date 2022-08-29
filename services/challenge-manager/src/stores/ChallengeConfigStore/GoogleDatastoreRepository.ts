@@ -1,11 +1,21 @@
 import {Datastore} from '@google-cloud/datastore';
 import {Challenge} from '../../types/Challenge';
-import {Repository} from '.';
+import {ChallengeConfigStoreRepository} from '.';
 
 const KIND = 'ctf-challenge-isolated';
 
-export class GoogleDatastoreRepository implements Repository {
-  constructor(private datastore: Datastore) {}
+export interface GoogleDatastoreRepositoryParams {
+  googleDatastore: Datastore;
+}
+
+export class GoogleDatastoreRepository
+  implements ChallengeConfigStoreRepository
+{
+  private datastore: Datastore;
+
+  constructor({googleDatastore}: GoogleDatastoreRepositoryParams) {
+    this.datastore = googleDatastore;
+  }
 
   async get(name: string): Promise<Challenge | null> {
     const query = this.datastore

@@ -4,18 +4,37 @@ import {fastifyRequestContextPlugin} from 'fastify-request-context';
 import {nanoid} from 'nanoid';
 import * as strings from './strings';
 import DeploymentRoute from './routes/deployment';
-import {ChallengeConfigStore} from './stores/ChallengeConfigStore';
+import {
+  ChallengeConfigStore,
+  ChallengeConfigStoreRepository,
+} from './stores/ChallengeConfigStore';
 import {Datastore} from '@google-cloud/datastore';
 import NodeCache from 'node-cache';
 import {KubeClient} from './kube';
 import {KubeConfig} from '@kubernetes/client-node';
 import {API_DOMAIN, BASE_DOMAIN, CONTAINER_SECRET, NAMESPACE} from './config';
 import {GoogleDatastoreRepository} from './stores/ChallengeConfigStore/GoogleDatastoreRepository';
+import {
+  asClass,
+  asFunction,
+  createContainer,
+  AwilixContainer,
+  InjectionMode,
+  Lifetime,
+} from 'awilix';
+
+interface Cradle {
+  challengeConfigStore: ChallengeConfigStore;
+  challengeConfigStoreCache: NodeCache;
+  challengeConfigStoreRepository: ChallengeConfigStoreRepository;
+  googleDatastore: Datastore;
+  kubeClient: KubeClient;
+  kubeConfig: KubeConfig;
+}
 
 declare module 'fastify' {
   interface FastifyInstance {
-    challengeConfigStore: ChallengeConfigStore;
-    kubeClient: KubeClient;
+    container: AwilixContainer<Cradle>;
   }
 }
 
@@ -32,24 +51,48 @@ export const init = async () => {
   });
   server.register(
     fp(async (server: FastifyInstance) => {
-      const kc = new KubeConfig();
-      kc.loadFromDefault();
-      const datastore = new Datastore();
+      const container: AwilixContainer<Cradle> = createContainer({
+        injectionMode: InjectionMode.PROXY,
+      });
 
-      server.decorate(
-        'challengeConfigStore',
-        new ChallengeConfigStore(
-          new NodeCache({
-            stdTTL: 60,
-          }),
-          new GoogleDatastoreRepository(datastore)
-        )
-      );
+      container.register({
+        challengeConfigStore: asClass(ChallengeConfigStore, {
+          lifetime: Lifetime.SCOPED,
+        }),
+        challengeConfigStoreCache: asFunction(
+          () => new NodeCache({stdTTL: 60}),
+          {lifetime: Lifetime.SCOPED}
+        ),
+        challengeConfigStoreRepository: asClass(GoogleDatastoreRepository, {
+          lifetime: Lifetime.SCOPED,
+        }),
+        googleDatastore: asFunction(() => new Datastore(), {
+          lifetime: Lifetime.SCOPED,
+        }),
+        kubeClient: asFunction(
+          ({kubeConfig}) =>
+            new KubeClient(
+              kubeConfig,
+              API_DOMAIN,
+              BASE_DOMAIN,
+              NAMESPACE,
+              CONTAINER_SECRET
+            ),
+          {lifetime: Lifetime.SCOPED}
+        ),
+        kubeConfig: asFunction(
+          () => {
+            const cfg = new KubeConfig();
+            cfg.loadFromDefault();
+            return cfg;
+          },
+          {
+            lifetime: Lifetime.SCOPED,
+          }
+        ),
+      });
 
-      server.decorate(
-        'kubeClient',
-        new KubeClient(kc, API_DOMAIN, BASE_DOMAIN, NAMESPACE, CONTAINER_SECRET)
-      );
+      server.decorate('container', container);
     })
   );
 

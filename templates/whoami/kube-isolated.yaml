@@ -1,0 +1,100 @@
+
+apiVersion: kube-ctf.downunderctf.com/v1
+kind: IsolatedChallenge
+metadata:
+  name: whoami
+spec:
+  expires: 3600
+  available_at: 1600000000
+  type: web
+  template: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: "ctf-{{ deployment_id }}"
+      namespace: kubectf-challenges-isolated
+      labels:
+        kube-ctf.downunderctf.com/category: web
+        kube-ctf.downunderctf.com/challenge: whoami
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
+        isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
+      annotations:
+        janitor/expires: "{{ expires }}"
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
+          isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
+      template:
+        metadata:
+          labels:
+            role: web
+            kube-ctf.downunderctf.com/category: web
+            kube-ctf.downunderctf.com/challenge: whoami
+            isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
+            isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
+        spec:
+          enableServiceLinks: false
+          automountServiceAccountToken: false
+          containers:
+          - name: web
+            image: containous/whoami:latest 
+            resources:
+              limits:
+                cpu: 20m
+                memory: 64Mi
+              requests:
+                cpu: 10m
+                memory: 32Mi
+            ports:
+            - containerPort: 80
+              name: port-80
+    ---
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: "ctf-{{ deployment_id }}"
+      namespace: kubectf-challenges-isolated
+      labels:
+        kube-ctf.downunderctf.com/category: web
+        kube-ctf.downunderctf.com/challenge: whoami
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
+        isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
+      annotations:
+        janitor/expires: "{{ expires }}"
+    spec:
+      selector:
+        role: web
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
+      ports:
+        - port: 80
+          name: port-80
+    ---
+    apiVersion: traefik.containo.us/v1alpha1
+    kind: IngressRoute
+    metadata:
+      name: ingress-ctf-{{ deployment_id }}
+      namespace: kubectf-challenges-isolated
+      labels:
+        kube-ctf.downunderctf.com/category: web
+        kube-ctf.downunderctf.com/challenge: whoami
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
+        isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
+      annotations:
+        janitor/expires: "{{ expires }}"
+    spec:
+      entryPoints:
+        - web
+        - websecure
+      tls:
+        certResolver: default
+      routes:
+        - match: Host(`{{ deployment_id }}.{{ domain }}`)
+          kind: Rule
+          priority: 10
+          middlewares:
+          - name: secure-headers
+          services:
+          - name: ctf-{{ deployment_id }}
+            port: 80

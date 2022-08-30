@@ -1,0 +1,32 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: isolated-challenges.kube-ctf.downunderctf.com
+spec:
+  group: kube-ctf.downunderctf.com
+  names:
+    plural: isolated-challenges
+    singular: isolated-challenge
+    kind: IsolatedChallenge
+    shortNames:
+      - isolated-challenge
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                expires:
+                  type: integer
+                available_at:
+                  type: integer
+                type:
+                  type: string
+                template:
+                  type: string
+  scope: Cluster

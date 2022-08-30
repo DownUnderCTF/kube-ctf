@@ -86,13 +86,14 @@ rules:
   - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: {{ .Release.Name }}-kube-janitor
+  namespace: {{ .Release.Name }}-challenges-isolated
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kube-janitor
+  name: {{ .Release.Name }}-kube-janitor
 subjects:
 - kind: ServiceAccount
   name: kube-janitor

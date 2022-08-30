@@ -10,25 +10,24 @@ import {
 } from './stores/ChallengeConfigStore';
 import {Datastore} from '@google-cloud/datastore';
 import NodeCache from 'node-cache';
-import {KubeClient} from './kube';
+import {DeploymentsStore} from './stores/DeploymentsStore';
 import {KubeConfig} from '@kubernetes/client-node';
 import {API_DOMAIN, BASE_DOMAIN, CONTAINER_SECRET, NAMESPACE} from './config';
-import {GoogleDatastoreRepository} from './stores/ChallengeConfigStore/GoogleDatastoreRepository';
 import {
-  asClass,
   asFunction,
   createContainer,
   AwilixContainer,
   InjectionMode,
   Lifetime,
 } from 'awilix';
+import {KubernetesRepository} from './stores/ChallengeConfigStore/KubernetesRepository';
 
 interface Cradle {
   challengeConfigStore: ChallengeConfigStore;
   challengeConfigStoreCache: NodeCache;
   challengeConfigStoreRepository: ChallengeConfigStoreRepository;
   googleDatastore: Datastore;
-  kubeClient: KubeClient;
+  kubeClient: DeploymentsStore;
   kubeConfig: KubeConfig;
 }
 
@@ -56,22 +55,29 @@ export const init = async () => {
       });
 
       container.register({
-        challengeConfigStore: asClass(ChallengeConfigStore, {
-          lifetime: Lifetime.SCOPED,
-        }),
-        challengeConfigStoreCache: asFunction(
-          () => new NodeCache({stdTTL: 60}),
-          {lifetime: Lifetime.SCOPED}
+        challengeConfigStore: asFunction(
+          ({challengeConfigStoreRepository}) =>
+            new ChallengeConfigStore(challengeConfigStoreRepository),
+          {
+            lifetime: Lifetime.SCOPED,
+          }
         ),
-        challengeConfigStoreRepository: asClass(GoogleDatastoreRepository, {
-          lifetime: Lifetime.SCOPED,
-        }),
+        challengeConfigStoreRepository: asFunction(
+          ({kubeConfig}) =>
+            new KubernetesRepository(
+              new NodeCache({stdTTL: 60}),
+              kubeConfig
+            ),
+          {
+            lifetime: Lifetime.SCOPED,
+          }
+        ),
         googleDatastore: asFunction(() => new Datastore(), {
           lifetime: Lifetime.SCOPED,
         }),
         kubeClient: asFunction(
           ({kubeConfig}) =>
-            new KubeClient(
+            new DeploymentsStore(
               kubeConfig,
               API_DOMAIN,
               BASE_DOMAIN,
@@ -95,13 +101,13 @@ export const init = async () => {
       server.decorate('container', container);
     })
   );
-  
+
   server.route({
     method: 'GET',
     url: '/healthz',
     handler: async (_, reply) => {
-      reply.send({ status: true });
-    }
+      reply.send({status: true});
+    },
   });
 
   server.setErrorHandler((error, request, reply) => {

@@ -44,7 +44,7 @@ export async function apply(
   client: KubernetesObjectApi,
   {fieldManager, extend, reset}: ApplyOptions
 ): Promise<KubernetesObject[]> {
-  const specs: KubernetesObject[] = yaml.safeLoadAll(spec);
+  const specs: KubernetesObject[] = yaml.loadAll(spec);
   const validSpecs = specs.filter(s => s && s.kind && s.metadata);
   const created: KubernetesObject[] = [];
   for (const spec of validSpecs) {
@@ -101,7 +101,7 @@ export async function destroy(
   spec: string,
   client: KubernetesObjectApi
 ): Promise<KubernetesObject[]> {
-  const specs: KubernetesObject[] = yaml.safeLoadAll(spec);
+  const specs: KubernetesObject[] = yaml.loadAll(spec);
   const validSpecs = specs.filter(s => s && s.kind && s.metadata);
   const destroyed: KubernetesObject[] = [];
   for (const spec of validSpecs) {

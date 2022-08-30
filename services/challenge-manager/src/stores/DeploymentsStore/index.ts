@@ -3,13 +3,14 @@ import {
   KubeConfig,
   KubernetesObjectApi,
 } from '@kubernetes/client-node';
-import {Challenge} from '../types/Challenge';
+import {Challenge} from '../../types/Challenge';
 import handlebars from 'handlebars';
 import {apply, destroy, generateIdentifier} from './actions';
+import {ISOLATED_CHALLENGE_QUALIFIER} from '../../strings';
 
-export class KubeClient {
+export class DeploymentsStore {
   private apps: AppsV1Api;
-  private objects: KubernetesObjectApi;
+  private objectApi: KubernetesObjectApi;
 
   constructor(
     cfg: KubeConfig,
@@ -19,7 +20,7 @@ export class KubeClient {
     private secret: string
   ) {
     this.apps = cfg.makeApiClient(AppsV1Api);
-    this.objects = KubernetesObjectApi.makeApiClient(cfg);
+    this.objectApi = KubernetesObjectApi.makeApiClient(cfg);
   }
 
   /**
@@ -36,7 +37,7 @@ export class KubeClient {
         undefined,
         undefined,
         undefined,
-        `role=iso-chal,ctf-isolated/owner=${ownerId}`
+        `${ISOLATED_CHALLENGE_QUALIFIER}/owner=${ownerId}`
       )
     ).body.items;
   }
@@ -68,7 +69,7 @@ export class KubeClient {
   async deploy(challenge: Challenge, ownerId: string) {
     // Generate the template
     const spec = this.renderTemplate(challenge, ownerId);
-    return await apply(spec, this.objects, {
+    return await apply(spec, this.objectApi, {
       fieldManager: this.apiDomain,
     });
   }
@@ -83,7 +84,7 @@ export class KubeClient {
    */
   async reset(challenge: Challenge, ownerId: string) {
     const spec = this.renderTemplate(challenge, ownerId);
-    return await apply(spec, this.objects, {
+    return await apply(spec, this.objectApi, {
       fieldManager: this.apiDomain,
       reset: true,
     });
@@ -98,7 +99,7 @@ export class KubeClient {
    */
   async extend(challenge: Challenge, ownerId: string) {
     const spec = this.renderTemplate(challenge, ownerId);
-    return await apply(spec, this.objects, {
+    return await apply(spec, this.objectApi, {
       fieldManager: this.apiDomain,
       extend: true,
     });
@@ -113,7 +114,7 @@ export class KubeClient {
    */
   async destroy(challenge: Challenge, ownerId: string) {
     const spec = this.renderTemplate(challenge, ownerId);
-    return await destroy(spec, this.objects);
+    return await destroy(spec, this.objectApi);
   }
 
   private renderTemplate(challenge: Challenge, ownerId: string) {

@@ -11,16 +11,18 @@ import * as strings from '../strings';
 
 const mapDeploymentToResponse = ({metadata}: V1Deployment) => ({
   name: metadata?.labels?.challenge,
-  host: `${metadata?.labels?.['ctf-isolated/deployment']}.${BASE_DOMAIN}`,
+  host: `${
+    metadata?.labels?.[`${strings.ISOLATED_CHALLENGE_QUALIFIER}/deployment`]
+  }.${BASE_DOMAIN}`,
   expires: metadata?.annotations?.['janitor/expires'],
-  owner: metadata?.labels?.['ctf-isolated/owner'],
+  owner: metadata?.labels?.[`${strings.ISOLATED_CHALLENGE_QUALIFIER}/owner`],
 });
 
 export default async function register(fastify: FastifyInstance) {
   const {kubeClient, challengeConfigStore} = fastify.container.cradle;
 
   fastify.addSchema({
-    $id: 'challenge-manager.downunderctf.com/schema/deployments.json',
+    $id: 'challenge-manager.kube-ctf.downunderctf.com/schema/deployments.json',
     type: 'object',
     properties: {
       options: {
@@ -92,7 +94,7 @@ export default async function register(fastify: FastifyInstance) {
     schema: {
       params: {
         name: {
-          $ref: 'challenge-manager.downunderctf.com/schema/deployments.json#/properties/name',
+          $ref: 'challenge-manager.kube-ctf.downunderctf.com/schema/deployments.json#/properties/name',
         },
       },
     },
@@ -126,11 +128,11 @@ export default async function register(fastify: FastifyInstance) {
     url: '/:name',
     schema: {
       body: {
-        $ref: 'challenge-manager.downunderctf.com/schema/deployments.json#/properties/options',
+        $ref: 'challenge-manager.kube-ctf.downunderctf.com/schema/deployments.json#/properties/options',
       },
       params: {
         name: {
-          $ref: 'challenge-manager.downunderctf.com/schema/deployments.json#/properties/name',
+          $ref: 'challenge-manager.kube-ctf.downunderctf.com/schema/deployments.json#/properties/name',
         },
       },
     },
@@ -143,7 +145,9 @@ export default async function register(fastify: FastifyInstance) {
 
       // Check if challenge name exists in current deployments
       const deployment = deployments.find(
-        ({metadata}) => metadata?.labels?.challenge === request.params.name
+        ({metadata}) =>
+          metadata?.labels?.[`${strings.API_GROUP}/challenge`] ===
+          request.params.name
       );
       if (deployment && !(request.body.reset || request.body.extend)) {
         return reply.code(400).send({
@@ -205,7 +209,7 @@ export default async function register(fastify: FastifyInstance) {
     schema: {
       params: {
         name: {
-          $ref: 'challenge-manager.downunderctf.com/schema/deployments.json#/properties/name',
+          $ref: 'challenge-manager.kube-ctf.downunderctf.com/schema/deployments.json#/properties/name',
         },
       },
     },

@@ -18,4 +18,15 @@ metadata:
     app.kubernetes.io/instance: {{ $relname }}
     app.kubernetes.io/component: {{ . }}
 ---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: secure-headers
+  namespace: {{ $relname }}-{{ . }}
+spec:
+  headers:
+    stsSeconds: 15552000
+    forceSTSHeader: true
+    stsIncludeSubdomains: true
+---
 {{- end }}

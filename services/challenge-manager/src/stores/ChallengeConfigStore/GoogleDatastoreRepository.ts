@@ -1,23 +1,25 @@
 import {Datastore} from '@google-cloud/datastore';
 import {Challenge} from '../../types/Challenge';
 import {ChallengeConfigStoreRepository} from '.';
+import NodeCache from 'node-cache';
 
 const KIND = 'ctf-challenge-isolated';
-
-export interface GoogleDatastoreRepositoryParams {
-  googleDatastore: Datastore;
-}
 
 export class GoogleDatastoreRepository
   implements ChallengeConfigStoreRepository
 {
-  private datastore: Datastore;
-
-  constructor({googleDatastore}: GoogleDatastoreRepositoryParams) {
-    this.datastore = googleDatastore;
-  }
+  constructor(private cache: NodeCache, private datastore: Datastore) {}
 
   async get(name: string): Promise<Challenge | null> {
+    let chal: Challenge | null = this.cache.get(name) as unknown as Challenge;
+    if (!chal) {
+      chal = await this._get(name);
+      this.cache.set(name, chal);
+    }
+    return chal;
+  }
+
+  private async _get(name: string) {
     const query = this.datastore
       .createQuery(KIND)
       .filter('__key__', this.datastore.key([KIND, name]))

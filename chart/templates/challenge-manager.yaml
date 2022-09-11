@@ -114,6 +114,7 @@ rules:
       - deployments
       - services
       - namespaces
+      - secrets
     verbs:
       - create
       - delete

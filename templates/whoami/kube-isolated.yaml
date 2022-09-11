@@ -14,7 +14,7 @@ spec:
       name: "ctf-{{ deployment_id }}"
       namespace: kubectf-challenges-isolated
       labels:
-        kube-ctf.downunderctf.com/category: web
+        kube-ctf.downunderctf.com/type: web
         kube-ctf.downunderctf.com/challenge: whoami
         isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
         isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
@@ -30,7 +30,7 @@ spec:
         metadata:
           labels:
             role: web
-            kube-ctf.downunderctf.com/category: web
+            kube-ctf.downunderctf.com/type: web
             kube-ctf.downunderctf.com/challenge: whoami
             isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
             isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
@@ -57,7 +57,7 @@ spec:
       name: "ctf-{{ deployment_id }}"
       namespace: kubectf-challenges-isolated
       labels:
-        kube-ctf.downunderctf.com/category: web
+        kube-ctf.downunderctf.com/type: web
         kube-ctf.downunderctf.com/challenge: whoami
         isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
         isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"
@@ -77,7 +77,7 @@ spec:
       name: ingress-ctf-{{ deployment_id }}
       namespace: kubectf-challenges-isolated
       labels:
-        kube-ctf.downunderctf.com/category: web
+        kube-ctf.downunderctf.com/type: web
         kube-ctf.downunderctf.com/challenge: whoami
         isolated-challenge.kube-ctf.downunderctf.com/deployment: "{{ deployment_id }}"
         isolated-challenge.kube-ctf.downunderctf.com/owner: "{{ owner_id }}"

@@ -12,12 +12,22 @@ kube-janitor:
       memory: 256Mi
 
 challenge-manager:
-  replicas: 2
+  replicas: 3
   authSecret: keyboard-cat
   containerSecret: keyboard-cat
   quota:
     limits:
-      cpu: 100m
+      cpu: 500m
+      memory: 1024Mi
+    requests:
+      cpu: 125m
+      memory: 256Mi
+
+landing:
+  replicas: 3
+  quota:
+    limits:
+      cpu: 500m
       memory: 512Mi
     requests:
       cpu: 50m

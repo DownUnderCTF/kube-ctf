@@ -110,6 +110,7 @@ rules:
     resources:
       - ingresses
       - ingressroutes
+      - ingressroutetcps
       - pods
       - deployments
       - services

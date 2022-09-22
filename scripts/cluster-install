@@ -16,4 +16,31 @@ helm install cert-manager jetstack/cert-manager --namespace cert-manager --creat
 helm install traefik traefik/traefik \
     --namespace traefik \
     --create-namespace \
-    --set "deployment.kind=DaemonSet,providers.kubernetesCRD.allowCrossNamespaces=true,logs.general.level=INFO,service.spec.externalTrafficPolicy=Local"
+    --values <(cat <<EOF
+installCRDs: true
+deployment:
+  kind: DaemonSet
+providers:
+  kubernetesCRD:
+    allowCrossNamespaces: true
+logs:
+  general:
+    level: 'INFO'
+service:
+  spec:
+    externalTrafficPolicy: 'Local'
+ports:
+  tcpsecure:
+    port: 40000
+    expose: true
+    protocol: 'TCP'
+    exposedPort: 32000
+    tls:
+      enabled: false
+      options:
+        alpnProtocols:
+          - http/1.1
+      certResolver: ''
+      domains: []
+EOF
+)

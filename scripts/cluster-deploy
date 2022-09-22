@@ -4,7 +4,7 @@ source `dirname "$0"`"/util"
 
 PROJECT_ID=`gcloud config get-value project`
 CLUSTER_NAME="ctf-cluster"
-CLUSTER_REGION="us-west1"
+CLUSTER_REGION="us-west1-a"
 CLUSTER_VERSION="1.22.11-gke.400"
 MACHINE_TYPE="e2-small"
 DISK_SIZE="48"
@@ -22,12 +22,12 @@ NUM_NODES=`ask_with_default "Number of Nodes" "$NUM_NODES"`
 gcloud services enable container.googleapis.com
 
 gcloud beta container clusters create "$CLUSTER_NAME" \
-  --region "$CLUSTER_REGION" \
+  --zone "$CLUSTER_REGION" \
   --no-enable-basic-auth \
   --cluster-version "$CLUSTER_VERSION" \
   --release-channel "regular" \
   --machine-type "$MACHINE_TYPE" \
-  --image-type "COS" \
+  --image-type "cos_containerd" \
   --disk-type "$DISK_TYPE" \
   --disk-size "$DISK_SIZE" \
   --metadata disable-legacy-endpoints=true \

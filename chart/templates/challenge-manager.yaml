@@ -96,8 +96,6 @@ kind: ServiceAccount
 metadata:
   name: challenge-manager
   namespace: {{ .Release.Name }}-management
-  annotations:
-    iam.gke.io/gcp-service-account: gke-challenge-manager@{{ .Values.googleProject }}.iam.gserviceaccount.com
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role

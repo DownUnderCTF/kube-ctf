@@ -14,7 +14,6 @@ data:
       - ingressroutetcps
       - services
       - ingresses
-      - secrets
       jmespath: "metadata.namespace == '{{ .Release.Name }}-challenges-isolated'"
       ttl: 8h
 ---

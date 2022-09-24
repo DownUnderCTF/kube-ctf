@@ -8,7 +8,6 @@ import {
   ChallengeConfigStore,
   ChallengeConfigStoreRepository,
 } from './stores/ChallengeConfigStore';
-import {Datastore} from '@google-cloud/datastore';
 import NodeCache from 'node-cache';
 import {DeploymentsStore} from './stores/DeploymentsStore';
 import {KubeConfig} from '@kubernetes/client-node';
@@ -26,7 +25,6 @@ interface Cradle {
   challengeConfigStore: ChallengeConfigStore;
   challengeConfigStoreCache: NodeCache;
   challengeConfigStoreRepository: ChallengeConfigStoreRepository;
-  googleDatastore: Datastore;
   kubeClient: DeploymentsStore;
   kubeConfig: KubeConfig;
 }
@@ -72,9 +70,6 @@ export const init = async () => {
             lifetime: Lifetime.SCOPED,
           }
         ),
-        googleDatastore: asFunction(() => new Datastore(), {
-          lifetime: Lifetime.SCOPED,
-        }),
         kubeClient: asFunction(
           ({kubeConfig}) =>
             new DeploymentsStore(

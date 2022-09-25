@@ -24,7 +24,7 @@ export function generateIdentifier(
 ) {
   const hmac = crypto.createHmac(HMAC_ALGORITHM, secret);
   hmac.update(JSON.stringify([name, teamId]));
-  return `${name}-${hmac.digest('hex').substr(0, RAND_LENGTH)}`;
+  return `${name}-${hmac.digest('hex').substring(0, RAND_LENGTH)}`;
 }
 
 /**
@@ -40,11 +40,11 @@ interface ApplyOptions {
   reset?: boolean;
 }
 export async function apply(
-  spec: string,
+  specString: string,
   client: KubernetesObjectApi,
   {fieldManager, extend, reset}: ApplyOptions
 ): Promise<KubernetesObject[]> {
-  const specs: KubernetesObject[] = yaml.loadAll(spec);
+  const specs: KubernetesObject[] = yaml.loadAll(specString) as KubernetesObject[];
   const validSpecs = specs.filter(s => s && s.kind && s.metadata);
   const created: KubernetesObject[] = [];
   for (const spec of validSpecs) {
@@ -73,7 +73,7 @@ export async function apply(
     try {
       // try to get the resource, if it does not exist an error will be thrown and we will end up in the catch
       // block.
-      if (!(extend || reset)) await client.read(spec);
+      if (!(extend || reset)) await client.read(spec as any);
       // we got the resource, so it exists therefore patch
       const response = await client.patch(
         spec,
@@ -101,7 +101,7 @@ export async function destroy(
   spec: string,
   client: KubernetesObjectApi
 ): Promise<KubernetesObject[]> {
-  const specs: KubernetesObject[] = yaml.loadAll(spec);
+  const specs: KubernetesObject[] = yaml.loadAll(spec) as KubernetesObject[];
   const validSpecs = specs.filter(s => s && s.kind && s.metadata);
   const destroyed: KubernetesObject[] = [];
   for (const spec of validSpecs) {

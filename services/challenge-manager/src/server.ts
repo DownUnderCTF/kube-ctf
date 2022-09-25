@@ -1,6 +1,6 @@
 import fastify, {FastifyInstance} from 'fastify';
 import fp from 'fastify-plugin';
-import {fastifyRequestContextPlugin} from 'fastify-request-context';
+import {fastifyRequestContextPlugin} from '@fastify/request-context';
 import {nanoid} from 'nanoid';
 import * as strings from './strings';
 import DeploymentRoute from './routes/deployment';
@@ -62,10 +62,7 @@ export const init = async () => {
         ),
         challengeConfigStoreRepository: asFunction(
           ({kubeConfig}) =>
-            new KubernetesRepository(
-              new NodeCache({stdTTL: 60}),
-              kubeConfig
-            ),
+            new KubernetesRepository(new NodeCache({stdTTL: 60}), kubeConfig),
           {
             lifetime: Lifetime.SCOPED,
           }
@@ -105,7 +102,7 @@ export const init = async () => {
     },
   });
 
-  server.setErrorHandler((error, request, reply) => {
+  server.setErrorHandler(async (error, request, reply) => {
     if (error.validation) {
       return reply.status(400).send({error: error.message});
     }

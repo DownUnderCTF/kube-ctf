@@ -4,9 +4,7 @@ import {CustomObjectsApi, KubeConfig} from '@kubernetes/client-node';
 import {API_GROUP} from '../../strings';
 import NodeCache from 'node-cache';
 
-export class KubernetesRepository
-  implements ChallengeConfigStoreRepository
-{
+export class KubernetesRepository implements ChallengeConfigStoreRepository {
   private customObjectsApi: CustomObjectsApi;
 
   constructor(private cache: NodeCache, cfg: KubeConfig) {

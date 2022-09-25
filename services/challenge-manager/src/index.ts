@@ -5,7 +5,10 @@ const start = async () => {
   const server = await init();
 
   try {
-    await server.listen(PORT, HOST);
+    await server.listen({
+      port: PORT,
+      host: HOST
+    });
   } catch (err) {
     server.log.error(err);
     throw err;

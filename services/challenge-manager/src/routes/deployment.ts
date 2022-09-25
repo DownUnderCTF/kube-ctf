@@ -185,7 +185,7 @@ export default async function register(fastify: FastifyInstance) {
             error: strings.ERROR_DEPLOYMENT_LIMIT,
           });
         }
-        
+
         request.log.info('deploy: type=new');
         res = await kubeClient.deploy(spec, owner);
       }

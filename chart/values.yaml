@@ -15,6 +15,7 @@ challenge-manager:
   replicas: 3
   authSecret: keyboard-cat
   containerSecret: keyboard-cat
+  registryPrefix: ghcr.io/downunderctf
   quota:
     limits:
       cpu: 500m

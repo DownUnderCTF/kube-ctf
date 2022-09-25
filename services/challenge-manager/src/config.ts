@@ -12,3 +12,4 @@ export const MAX_OWNER_DEPLOYMENTS =
 export const AUTH_SECRET = process.env.KUBECTF_AUTH_SECRET || 'keyboard-cat';
 export const CONTAINER_SECRET =
   process.env.KUBECTF_CONTAINER_SECRET || 'keyboard-cat';
+export const REGISTRY_PREFIX = process.env.KUBECTF_REGISTRY_PREFIX || '';

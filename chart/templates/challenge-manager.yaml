@@ -40,6 +40,8 @@ spec:
             value: {{ .Release.Name }}-challenges-isolated
           - name: KUBECTF_MAX_OWNER_DEPLOYMENTS
             value: "4"
+          - name: KUBECTF_REGISTRY_PREFIX
+            value: {{ (index  .Values "challenge-manager").registryPrefix }}
           - name: KUBECTF_AUTH_SECRET
             valueFrom:
               secretKeyRef:

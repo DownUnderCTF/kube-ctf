@@ -11,7 +11,13 @@ import {
 import NodeCache from 'node-cache';
 import {DeploymentsStore} from './stores/DeploymentsStore';
 import {KubeConfig} from '@kubernetes/client-node';
-import {API_DOMAIN, BASE_DOMAIN, CONTAINER_SECRET, NAMESPACE} from './config';
+import {
+  API_DOMAIN,
+  BASE_DOMAIN,
+  CONTAINER_SECRET,
+  NAMESPACE,
+  REGISTRY_PREFIX,
+} from './config';
 import {
   asFunction,
   createContainer,
@@ -74,6 +80,7 @@ export const init = async () => {
               API_DOMAIN,
               BASE_DOMAIN,
               NAMESPACE,
+              REGISTRY_PREFIX,
               CONTAINER_SECRET
             ),
           {lifetime: Lifetime.SCOPED}

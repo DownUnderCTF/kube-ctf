@@ -44,7 +44,9 @@ export async function apply(
   client: KubernetesObjectApi,
   {fieldManager, extend, reset}: ApplyOptions
 ): Promise<KubernetesObject[]> {
-  const specs: KubernetesObject[] = yaml.loadAll(specString) as KubernetesObject[];
+  const specs: KubernetesObject[] = yaml.loadAll(
+    specString
+  ) as KubernetesObject[];
   const validSpecs = specs.filter(s => s && s.kind && s.metadata);
   const created: KubernetesObject[] = [];
   for (const spec of validSpecs) {
@@ -73,6 +75,7 @@ export async function apply(
     try {
       // try to get the resource, if it does not exist an error will be thrown and we will end up in the catch
       // block.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (!(extend || reset)) await client.read(spec as any);
       // we got the resource, so it exists therefore patch
       const response = await client.patch(

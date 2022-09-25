@@ -7,7 +7,7 @@ const start = async () => {
   try {
     await server.listen({
       port: PORT,
-      host: HOST
+      host: HOST,
     });
   } catch (err) {
     server.log.error(err);

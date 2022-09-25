@@ -17,6 +17,7 @@ export class DeploymentsStore {
     private apiDomain: string,
     private domain: string,
     private namespace: string,
+    private registryPrefix: string,
     private secret: string
   ) {
     this.apps = cfg.makeApiClient(AppsV1Api);
@@ -122,6 +123,7 @@ export class DeploymentsStore {
     const spec = tpl({
       deployment_id: generateIdentifier(challenge.name, ownerId, this.secret),
       challenge_name: challenge.name,
+      registry_prefix: this.registryPrefix,
       owner_id: ownerId,
       domain: this.domain,
       expires:

@@ -18,7 +18,7 @@ spec:
       serviceAccountName: challenge-manager
       containers:
       - name: challenge-manager
-        image: gcr.io/{{ .Values.googleProject }}/services/challenge-manager:latest
+        image: {{ .Values.googleRegion }}-docker.pkg.dev/{{ .Values.googleProject }}/{{ .Values.googleRepositoryName }}/services/challenge-manager:latest
         readinessProbe:
           httpGet:
             port: 3000
@@ -116,6 +116,7 @@ rules:
       - services
       - namespaces
       - secrets
+      - networkpolicies
     verbs:
       - create
       - delete

@@ -15,7 +15,12 @@ per-team challenge assignment for web challenges. Inspired by [kCTF](https://git
 ./scripts/cluster-configure
 ```
 
-3. Create config/values.yaml and populate it with values.
+3. Install the cluster resources.
+```sh
+./scripts/cluster-install
+```
+
+4. Create config/values.yaml and populate it with values.
 ```yaml
 domain:
   challenges: <root domain where challenges are hosted> # challenges will be a subdomain of this
@@ -23,11 +28,12 @@ domain:
 replicas:
   challenge-manager: 2
 
-containerRegistry: gcr.io/example # don't include the slash at the end
-
 cert:
   email: <contact email> # required for letsencrypt
   cfDNSToken: <cloudflare dns token> # used to configure dns-01 certificate validation
+
+
+googleProject: <project ID of the Google Project>
 ```
 
 4. Deploy the helm stack.
@@ -35,20 +41,13 @@ cert:
 helm install kubectf -f config/values.yaml chart/
 ```
 
-5. Upload the sample whoami challenge
+5. Upload the sample whoami challenge for testing.
 ```sh
-GOOGLE_APPLICATION_CREDENTIALS=<sevice account json> ./scripts/process-isolated-challenges
+kubectl apply -f templates/whoami/kube-isolated.yaml
 ```
 
-## How to Write Isolated Challenges
-TODO
-
-## TODO
-- `./scripts/process-isolated-challenges` already exists to process the challenge templates and upload them
-to Google Cloud Datastore. We should integrate this with GitHub actions in order to do automatic deployments
-on push.
-- Interface this with CTFd
-- TLS termination for challenges, which can be done by adding cert-manager.
+## How to Deploy Isolated Challenges
+See the README at [services/challenge-manager](services/challenge-manager)
 
 ## Authors
 - [BlueAlder](https://github.com/BlueAlder)

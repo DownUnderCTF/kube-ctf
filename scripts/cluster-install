@@ -1,6 +1,7 @@
 #!/bin/bash
 
 kubectl create namespace traefik
+kubectl create namespace cert-manager
 kubectl label namespace cert-manager app.kubernetes.io/name=cert-manager   
 kubectl label namespace traefik app.kubernetes.io/name=traefik  
 
@@ -10,8 +11,8 @@ helm repo add traefik https://helm.traefik.io/traefik
 helm repo update
 
 # install the proxification stuff
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
-    --version v1.9.1 \
+helm install cert-manager jetstack/cert-manager --namespace cert-manager \
+    --version v1.12.3 \
     --set installCRDs=true
 helm install traefik traefik/traefik \
     --namespace traefik \
@@ -25,11 +26,17 @@ providers:
     allowCrossNamespaces: true
 logs:
   general:
-    level: 'INFO'
+    # This is fatal since traefik spits errors whenever an instance is spun up
+    level: 'FATAL'
 service:
   spec:
     externalTrafficPolicy: 'Local'
 ports:
+  blockchain:
+    port: 8545
+    expose: true
+    protocol: 'TCP'
+    exposedPort: 8545
   tcpsecure:
     port: 40000
     expose: true

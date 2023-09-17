@@ -20,7 +20,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: web
-        image: gcr.io/{{ .Values.googleProject }}/services/landing:latest
+        image: {{ .Values.googleRegion }}-docker.pkg.dev/{{ .Values.googleProject }}/{{ .Values.googleRepositoryName }}/services/landing:latest
         resources:
 {{ toYaml (index  .Values "landing").quota | indent 10 }}
         ports:

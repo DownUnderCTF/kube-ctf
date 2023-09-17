@@ -1,8 +1,8 @@
 steps:
-- id: build
-  name: 'gcr.io/kaniko-project/executor:latest'
-  args:
-  - --destination=gcr.io/$PROJECT_ID/services/landing
-  - --cache=true
-  - --cache-ttl=168h
+  - id: build
+    name: "gcr.io/kaniko-project/executor:latest"
+    args:
+      - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/ductf/services/landing
+      - --cache=true
+      - --cache-ttl=168h
 #  - --context=dir://services/landing

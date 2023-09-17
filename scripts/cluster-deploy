@@ -2,14 +2,17 @@
 
 source `dirname "$0"`"/util"
 
+set -e
+
 PROJECT_ID=`gcloud config get-value project`
 CLUSTER_NAME="ctf-cluster"
-CLUSTER_REGION="us-west1-a"
-CLUSTER_VERSION="1.22.11-gke.400"
-MACHINE_TYPE="e2-small"
-DISK_SIZE="48"
+CLUSTER_REGION="us-central1-a"
+CLUSTER_VERSION="1.27.3-gke.100"
+MACHINE_TYPE="e2-medium"
+DISK_SIZE="30"
 DISK_TYPE="pd-standard"
-NUM_NODES="1"
+NUM_NODES="3"
+VPC_NAME="ductf-network"
 
 CLUSTER_NAME=`ask_with_default "Cluster Name" "$CLUSTER_NAME"`
 CLUSTER_REGION=`ask_with_default "Cluster Zone" "$CLUSTER_REGION"`
@@ -18,8 +21,12 @@ MACHINE_TYPE=`ask_with_default "Machine Type" "$MACHINE_TYPE"`
 DISK_SIZE=`ask_with_default "Disk Size (GB)" "$DISK_SIZE"`
 DISK_TYPE=`ask_with_default "Disk Type (pd-standard or pd-ssd)" "$DISK_TYPE"`
 NUM_NODES=`ask_with_default "Number of Nodes" "$NUM_NODES"`
+VPC_NAME=`ask_with_default "VPC to create" "$VPC_NAME"`
 
+gcloud services enable compute.googleapis.com
 gcloud services enable container.googleapis.com
+
+# gcloud compute networks create $VPC_NAME --subnet-mode=auto 
 
 gcloud beta container clusters create "$CLUSTER_NAME" \
   --zone "$CLUSTER_REGION" \
@@ -41,6 +48,8 @@ gcloud beta container clusters create "$CLUSTER_NAME" \
   --addons HorizontalPodAutoscaling,GcePersistentDiskCsiDriver \
   --max-surge-upgrade 1 \
   --max-unavailable-upgrade 0 \
-  --enable-shielded-nodes
+  --enable-shielded-nodes \
+  --location-policy BALANCED \
+  --network ${VPC_NAME}
 
 gcloud container clusters --region "$CLUSTER_REGION" get-credentials "$CLUSTER_NAME"

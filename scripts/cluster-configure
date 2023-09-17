@@ -4,62 +4,17 @@
 source `dirname "$0"`"/util"
 
 PROJECT_ID=`gcloud config get-value project`
-APPENGINE_REGION=`gcloud app describe | grep -oP '^locationId: \K[\da-z-]+'`
-BASE_DOMAIN="example.com"
 KUBECTF_NAMESPACE="kubectf"
-# ADMIN_EMAIL="example@example.com"
-
 
 # ask the questions
 CLUSTER_NAME=`ask_with_default "Cluster name" ""`
-APPENGINE_REGION=`ask_with_default "App Engine Region" "$APPENGINE_REGION"`
 KUBECTF_NAMESPACE=`ask_with_default "KubeCTF Instance (should be the same as in values.yaml)" "$KUBECTF_NAMESPACE"`
 SERVICE_ACCOUNT_CHALLENGE_MANAGER="gke-challenge-manager"
-# BASE_DOMAIN=`ask_with_default "Base Domain" "$BASE_DOMAIN"`
-# ADMIN_EMAIL=`ask_with_default "Admin Email Address" "$ADMIN_EMAIL"`
 
-# # clean up old dir
-# rm -rf services/
-
-# # generate configs
-# for file in `find service-templates/ -type f -name "*.yml"`
-# do
-#   new_file="services/"`echo "$file" | cut -d'/' -f2-`
-#   mkdir -p `dirname "$new_file"`
-#   envsubst < "$file" > "$new_file"
-# done
-
-# # create datastore for deployment templates and create iam user
-gcloud app create --region="$APPENGINE_REGION"
-gcloud datastore databases create --region "$APPENGINE_REGION"
 
 gcloud iam service-accounts create "$SERVICE_ACCOUNT_CHALLENGE_MANAGER"
-
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-    --member="serviceAccount:$SERVICE_ACCOUNT_CHALLENGE_MANAGER@$PROJECT_ID.iam.gserviceaccount.com" \
-    --role=roles/datastore.viewer
 
 gcloud iam service-accounts add-iam-policy-binding \
     --role roles/iam.workloadIdentityUser \
     --member "serviceAccount:$PROJECT_ID.svc.id.goog[$KUBECTF_NAMESPACE-management/challenge-manager]" \
     "$SERVICE_ACCOUNT_CHALLENGE_MANAGER@$PROJECT_ID.iam.gserviceaccount.com"
-
-
-# create namespaces
-kubectl create namespace traefik
-kubectl label namespace cert-manager app.kubernetes.io/name=cert-manager   
-kubectl label namespace traefik app.kubernetes.io/name=traefik  
-
-# install helm stuff
-helm repo add jetstack https://charts.jetstack.io
-helm repo add traefik https://helm.traefik.io/traefik
-helm repo update
-
-# install the proxification stuff
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace \
-    --version v1.9.1 \
-    --set installCRDs=true
-helm install traefik traefik/traefik \
-    --namespace traefik \
-    --create-namespace \
-    --set "deployment.kind=DaemonSet,providers.kubernetesCRD.allowCrossNamespaces=true,logs.general.level=INFO,service.spec.externalTrafficPolicy=Local"

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+
+source `dirname "$0"`"/util"
+
+PROJECT_ID=`gcloud config get-value project`
+REPO_NAME="ductf"
+REPO_LOCATION="australia-southeast1"
+
+PROJECT_ID=`ask_with_default "Project ID" "$PROJECT_ID"`
+REPO_NAME=`ask_with_default "AR Repo Name" "$REPO_NAME"`
+REPO_LOCATION=`ask_with_default "AR Repo Location" "$REPO_LOCATION"`
+
+
+gcloud services enable artifactregistry.googleapis.com
+gcloud services enable cloudbuild.googleapis.com
+
+# Create artifact registry repo
+gcloud artifacts repositories create ${REPO_NAME} \
+  --repository-format=docker \
+  --location=${REPO_LOCATION} \
+  --description="registry for CTF related images" 
+
+
+gcloud builds submit ./services/challenge-manager/ \
+  --config ./services/challenge-manager/cloudbuild.yaml \
+  --region ${REPO_LOCATION} \
+  --async
+gcloud builds submit ./services/landing/ \
+  --config ./services/landing/cloudbuild.yaml \
+  --region ${REPO_LOCATION} \
+  --async

@@ -1,13 +1,354 @@
 <!DOCTYPE html>
-<html>
-    <h1>Hello from DUCTF!</h1>
 
-    <p>
-        This URL currently does not resolve to a challenge. If you have just started an on-demand
-        challenge, please wait a few minutes for it to deploy.
-    </p>
-    
-    <p>
-        Otherwise, please let us know if there are any issues :)
-    </p>
+<style id="theme-color">
+  :root {
+    --theme-color: #abd750;
+    /* --theme-color: #c6ff00; */
+    --dark-theme-color: #8fbe3e;
+    --header-font: "Exo";
+    --body-font: "Alata";
+    --solved-color: #beed25;
+    --text-color: #f3f3f3;
+    --text-dark: #4a4a4a;
+    /* --dark-bg: #171a1f; */
+    --dark-bg: #1a1b1e;
+  }
+
+  /* vietnamese */
+  @font-face {
+    font-family: "Alata";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local("Alata Regular"), local("Alata-Regular"),
+      url("https://fonts.gstatic.com/s/alata/v2/PbytFmztEwbIoceyzqYhQA.woff2")
+        format("woff2");
+    unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
+      U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+  }
+  /* latin-ext */
+  @font-face {
+    font-family: "Alata";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local("Alata Regular"), local("Alata-Regular"),
+      url("https://fonts.gstatic.com/s/alata/v2/PbytFmztEwbIocezzqYhQA.woff2")
+        format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+      U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  /* latin */
+  @font-face {
+    font-family: "Alata";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local("Alata Regular"), local("Alata-Regular"),
+      url("https://fonts.gstatic.com/s/alata/v2/PbytFmztEwbIoce9zqY.woff2")
+        format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+      U+2215, U+FEFF, U+FFFD;
+  }
+  /* vietnamese */
+  @font-face {
+    font-family: "Exo";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("https://fonts.gstatic.com/s/exo/v11/4UaZrEtFpBI4f1ZSIK9d4LjJ4tMwOwtmO24p.woff2")
+      format("woff2");
+    unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
+      U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+  }
+  /* latin-ext */
+  @font-face {
+    font-family: "Exo";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("https://fonts.gstatic.com/s/exo/v11/4UaZrEtFpBI4f1ZSIK9d4LjJ4tMwOwpmO24p.woff2")
+      format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+      U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  /* latin */
+  @font-face {
+    font-family: "Exo";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("https://fonts.gstatic.com/s/exo/v11/4UaZrEtFpBI4f1ZSIK9d4LjJ4tMwOwRmOw.woff2")
+      format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+      U+2215, U+FEFF, U+FFFD;
+  }
+
+  /* vietnamese */
+  @font-face {
+    font-family: "Alata";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local("Alata Regular"), local("Alata-Regular"),
+      url("https://fonts.gstatic.com/s/alata/v2/PbytFmztEwbIoceyzqYhQA.woff2")
+        format("woff2");
+    unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
+      U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+  }
+  /* latin-ext */
+  @font-face {
+    font-family: "Alata";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local("Alata Regular"), local("Alata-Regular"),
+      url("https://fonts.gstatic.com/s/alata/v2/PbytFmztEwbIocezzqYhQA.woff2")
+        format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+      U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  /* latin */
+  @font-face {
+    font-family: "Alata";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local("Alata Regular"), local("Alata-Regular"),
+      url("https://fonts.gstatic.com/s/alata/v2/PbytFmztEwbIoce9zqY.woff2")
+        format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+      U+2215, U+FEFF, U+FFFD;
+  }
+
+  /* latin-ext */
+  @font-face {
+    font-family: "Lato";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/lato/v23/S6uyw4BMUTPHjxAwXjeu.woff2)
+      format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+      U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  /* latin */
+  @font-face {
+    font-family: "Lato";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/lato/v23/S6uyw4BMUTPHjx4wXg.woff2)
+      format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+      U+2215, U+FEFF, U+FFFD;
+  }
+
+  /* =======================end font imports===================== */
+
+  html,
+  main,
+  body {
+    background-color: var(--dark-bg);
+    color: var(--text-color) !important;
+    font-family: var(--body-font), sans-serif !important;
+    margin: 0;
+    padding: 0;
+  }
+  footer {
+    display: none;
+  }
+  pre {
+    background: #0e110e;
+    padding: 8px;
+    border-radius: 12px;
+  }
+  code {
+    color: var(--dark-theme-color) !important;
+    background: #0e110e;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .navbar {
+    background-color: var(--dark-bg) !important;
+    padding-top: 18px;
+  }
+  .btn[href="/oauth"] {
+    display: none;
+  }
+  .jumbotron {
+    background-color: var(--dark-bg) !important;
+    padding-bottom: 0;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--header-font);
+  }
+
+  table {
+    color: #eaeaea !important;
+  }
+  a {
+    color: var(--theme-color);
+  }
+  a:hover {
+    color: var(--dark-theme-color) !important;
+  }
+
+  button.close {
+    display: none;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
+    overflow-y: hidden;
+    align-items: center;
+  }
+
+  .lds-roller {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .lds-roller div {
+    animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    transform-origin: 40px 40px;
+  }
+  .lds-roller div:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #beed25;
+    margin: -4px 0 0 -4px;
+  }
+  .lds-roller div:nth-child(1) {
+    animation-delay: -0.036s;
+  }
+  .lds-roller div:nth-child(1):after {
+    top: 63px;
+    left: 63px;
+  }
+  .lds-roller div:nth-child(2) {
+    animation-delay: -0.072s;
+  }
+  .lds-roller div:nth-child(2):after {
+    top: 68px;
+    left: 56px;
+  }
+  .lds-roller div:nth-child(3) {
+    animation-delay: -0.108s;
+  }
+  .lds-roller div:nth-child(3):after {
+    top: 71px;
+    left: 48px;
+  }
+  .lds-roller div:nth-child(4) {
+    animation-delay: -0.144s;
+  }
+  .lds-roller div:nth-child(4):after {
+    top: 72px;
+    left: 40px;
+  }
+  .lds-roller div:nth-child(5) {
+    animation-delay: -0.18s;
+  }
+  .lds-roller div:nth-child(5):after {
+    top: 71px;
+    left: 32px;
+  }
+  .lds-roller div:nth-child(6) {
+    animation-delay: -0.216s;
+  }
+  .lds-roller div:nth-child(6):after {
+    top: 68px;
+    left: 24px;
+  }
+  .lds-roller div:nth-child(7) {
+    animation-delay: -0.252s;
+  }
+  .lds-roller div:nth-child(7):after {
+    top: 63px;
+    left: 17px;
+  }
+  .lds-roller div:nth-child(8) {
+    animation-delay: -0.288s;
+  }
+  .lds-roller div:nth-child(8):after {
+    top: 56px;
+    left: 12px;
+  }
+  @keyframes lds-roller {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .challenge-loading {
+    display: none;
+  }
+
+  .wrong-domain {
+    display: none;
+  }
+</style>
+
+<html>
+  <head>
+    <title>DUCTF Loading</title>
+  </head>
+  <body>
+    <div class="container flex justify-center">
+      <div class="challenge-loading">
+        <h1>Your personal challenge instance is starting up!</h1>
+        <p>
+          Please wait a few moments for the instance to become available. This
+          may take a few minutes. You may see "Bad Gateway" or "Service
+          Unavailable", this is normal and you will just need to wait a bit
+          longer.
+        </p>
+
+        <p>
+          If this page does not update within 5 minutes please request support
+          :)
+        </p>
+        <!-- Thankyou loading.io ! -->
+        <div class="lds-roller">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="wrong-domain">
+        <h1>Hello from DUCTF!</h1>
+        <p>
+          This URL currently does not resolve to a challenge, please check the
+          URI and try again.
+        </p>
+      </div>
+    </div>
+    <script defer src="subdomain.js"></script>
+  </body>
 </html>

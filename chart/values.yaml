@@ -2,7 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-
 kube-janitor:
   quota:
     limits:
@@ -33,13 +32,15 @@ landing:
     requests:
       cpu: 50m
       memory: 256Mi
-      
+
 domain:
   challenges: chal.example.com
   management: management.example.com
 
 # google project ID
 googleProject: example
+googleRegion: australia-southeast1
+googleRepositoryName: example
 
 cert:
   email: email@example.com
@@ -47,5 +48,5 @@ cert:
 
 # Don't change these unless you know what you're doing
 challengeNamespaces:
-- challenges
-- challenges-isolated
+  - challenges
+  - challenges-isolated

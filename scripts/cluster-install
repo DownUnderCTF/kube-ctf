@@ -19,6 +19,8 @@ helm install traefik traefik/traefik \
     --create-namespace \
     --values <(cat <<EOF
 installCRDs: true
+core:
+  defaultRuleSyntax: v2
 deployment:
   kind: DaemonSet
 providers:
@@ -34,12 +36,14 @@ service:
 ports:
   blockchain:
     port: 8545
-    expose: true
+    expose: 
+      default: true
     protocol: 'TCP'
     exposedPort: 8545
   tcpsecure:
     port: 40000
-    expose: true
+    expose: 
+      default: true
     protocol: 'TCP'
     exposedPort: 32000
     tls:

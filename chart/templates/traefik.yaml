@@ -1,6 +1,6 @@
 {{- $relname := .Release.Name -}}
 {{- range .Values.challengeNamespaces }}
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: hsts
@@ -12,7 +12,7 @@ spec:
     stsIncludeSubdomains: true
 ---
 {{- end }}
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: hsts
@@ -23,7 +23,7 @@ spec:
     forceSTSHeader: true
     stsIncludeSubdomains: true
 ---
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: TLSStore
 metadata:
   name: default

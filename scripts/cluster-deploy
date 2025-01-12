@@ -7,7 +7,7 @@ set -e
 PROJECT_ID=`gcloud config get-value project`
 CLUSTER_NAME="ctf-cluster"
 CLUSTER_REGION="us-central1-a"
-CLUSTER_VERSION="1.27.3-gke.100"
+CLUSTER_VERSION="1.29.4-gke.1043002"
 MACHINE_TYPE="e2-medium"
 DISK_SIZE="30"
 DISK_TYPE="pd-standard"

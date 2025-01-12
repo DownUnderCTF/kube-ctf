@@ -7,7 +7,7 @@ PROJECT_ID=`gcloud config get-value project`
 KUBECTF_NAMESPACE="kubectf"
 
 # ask the questions
-CLUSTER_NAME=`ask_with_default "Cluster name" ""`
+CLUSTER_NAME=`ask_with_default "Cluster name" "ctf-cluster"`
 KUBECTF_NAMESPACE=`ask_with_default "KubeCTF Instance (should be the same as in values.yaml)" "$KUBECTF_NAMESPACE"`
 SERVICE_ACCOUNT_CHALLENGE_MANAGER="gke-challenge-manager"
 

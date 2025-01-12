@@ -5,7 +5,7 @@
 
  function checkChallengeReady() {
   const host = window.location.origin;
-  fetch(host)
+  fetch(host, {cache: 'no-store'})
     .then(res => {
       if (res.status === 200) {
         // Parse response text
@@ -17,7 +17,10 @@
               location.reload(true) 
             }
           })
-      } else { console.log("instance not ready")} 
+      } else if (res.status < 500) {
+        location.reload(true)
+      }
+      else { console.log("instance not ready")} 
     })
     .catch(e => console.error(e))
  }

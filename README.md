@@ -49,6 +49,11 @@ kubectl apply -f templates/whoami/kube-isolated.yaml
 ## How to Deploy Isolated Challenges
 See the README at [services/challenge-manager](services/challenge-manager)
 
+## Support
+This project is provided as-is for DownUnderCTF's internal use, and we are sharing it with the community as
+a goodwill effort. While we do not provide dedicated support, you can ask questions or discuss issues in our
+[GitHub Discussions](https://github.com/DownUnderCTF/kube-ctf/discussions) forum.
+
 ## Authors
 - [BlueAlder](https://github.com/BlueAlder)
 - [jordanbertasso](https://github.com/jordanbertasso)

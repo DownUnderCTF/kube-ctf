@@ -12,8 +12,8 @@ helm repo update
 
 # install the proxification stuff
 helm install cert-manager jetstack/cert-manager --namespace cert-manager \
-    --version v1.12.3 \
-    --set installCRDs=true
+    --version v1.18.0 \
+    --set crds.enabled=true
 helm install traefik traefik/traefik \
     --namespace traefik \
     --create-namespace \
@@ -32,7 +32,9 @@ logs:
     level: 'FATAL'
 service:
   spec:
-    externalTrafficPolicy: 'Local'
+    externalTrafficPolicy: 'Cluster'
+additionalArguments:
+  - "--api.insecure=true"
 ports:
   blockchain:
     port: 8545

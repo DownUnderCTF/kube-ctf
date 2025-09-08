@@ -1,0 +1,16 @@
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - $LOCATION-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/services/challenge-manager-ui
+      - '.'
+  - id: push
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - $LOCATION-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/services/challenge-manager-ui
+
+substitutions:
+  _REPOSITORY: 'infra'

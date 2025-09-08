@@ -1,8 +1,16 @@
 steps:
   - id: build
-    name: 'gcr.io/kaniko-project/executor:latest'
+    name: gcr.io/cloud-builders/docker
     args:
-      - --destination=$LOCATION-docker.pkg.dev/$PROJECT_ID/infra/services/challenge-manager
-      - --cache=true
-      - --cache-ttl=168h
-#  - --context=dir://services/challenge-manager
+      - build
+      - -t
+      - $LOCATION-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/services/challenge-manager
+      - "."
+  - id: push
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      - push
+      - $LOCATION-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/services/challenge-manager
+
+substitutions:
+  _REPOSITORY: 'infra'

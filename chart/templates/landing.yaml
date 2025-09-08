@@ -20,7 +20,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: web
-        image: {{ .Values.googleRegion }}-docker.pkg.dev/{{ .Values.googleProject }}/{{ .Values.googleRepositoryName }}/landing:latest
+        image: {{ .Values.registries.infra }}/services/landing:latest
         resources:
 {{ toYaml (index  .Values "landing").quota | indent 10 }}
         ports:
@@ -39,15 +39,13 @@ spec:
   ports:
     - port: 80
 ---
-# default ingressroute
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: landing
+  name: landing-https
   namespace: {{ .Release.Name }}-challenges
 spec:
   entryPoints:
-    - web
     - websecure
   tls:
     store:
@@ -56,8 +54,22 @@ spec:
     - match: HostRegexp(`{{ .Values.domain.challenges }}`, `{subdomain:[\w-]+}.{{ .Values.domain.challenges }}`)
       kind: Rule
       priority: 1
-      middlewares:
-      - name: hsts
+      services:
+      - name: landing
+        port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: landing-http
+  namespace: {{ .Release.Name }}-challenges
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: HostRegexp(`{{ .Values.domain.challenges }}`, `{subdomain:[\w-]+}.{{ .Values.domain.challenges }}`)
+      kind: Rule
+      priority: 1
       services:
       - name: landing
         port: 80

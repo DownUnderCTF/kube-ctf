@@ -1,3 +1,16 @@
+{{- $deployment := (index .Values "challenge-manager") }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: challenge-manager-custom-ca
+  namespace: {{ .Release.Name }}-management
+type: Opaque
+data:
+  CACHEDIR.TAG: ""
+{{- if $deployment.redis.ca }}
+  redis.pem: {{ $deployment.redis.ca | b64enc | quote }}
+{{- end }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +19,7 @@ metadata:
   labels:
     kube-ctf.downunderctf.com/service: challenge-manager
 spec:
-  replicas: {{ (index  .Values "challenge-manager").replicas }}
+  replicas: {{ $deployment.replicas }}
   selector:
     matchLabels:
       kube-ctf.downunderctf.com/service: challenge-manager
@@ -16,46 +29,76 @@ spec:
         kube-ctf.downunderctf.com/service: challenge-manager
     spec:
       serviceAccountName: challenge-manager
+      {{- if $deployment.redis.ca }}
+      volumes:
+        - name: custom-ca
+          secret:
+            secretName: challenge-manager-custom-ca
+      {{- end }}
       containers:
-      - name: challenge-manager
-        image: {{ .Values.googleRegion }}-docker.pkg.dev/{{ .Values.googleProject }}/{{ .Values.googleRepositoryName }}/challenge-manager:latest
-        readinessProbe:
-          httpGet:
-            port: 3000
-            path: /healthz
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            port: 3000
-            path: /healthz
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        env:
-          - name: KUBECTF_BASE_DOMAIN
-            value: {{ .Values.domain.challenges }}
-          - name: KUBECTF_API_DOMAIN
-            value: challenge-manager.{{ .Values.domain.management }}
-          - name: KUBECTF_NAMESPACE
-            value: {{ .Release.Name }}-challenges-isolated
-          - name: KUBECTF_MAX_OWNER_DEPLOYMENTS
-            value: "4"
-          - name: KUBECTF_REGISTRY_PREFIX
-            value: {{ (index  .Values "challenge-manager").registryPrefix }}
-          - name: KUBECTF_AUTH_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: challenge-manager
-                key: auth
-          - name: KUBECTF_CONTAINER_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: challenge-manager
-                key: container
-        resources:
-{{ toYaml (index  .Values "challenge-manager").quota | indent 10 }}
-        ports:
-        - containerPort: 3000
+        - name: challenge-manager
+          image: {{ .Values.registries.infra }}/services/challenge-manager:latest
+          {{- if $deployment.redis.ca }}
+          volumeMounts:
+            - name: custom-ca
+              mountPath: /ssl/
+              readOnly: true
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /healthz
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /healthz
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          env:
+            - name: KUBECTF_BASE_DOMAIN
+              value: {{ .Values.domain.isolated }}
+            - name: KUBECTF_API_DOMAIN
+              value: instancer.{{ .Values.domain.management }}
+            - name: KUBECTF_NAMESPACE
+              value: {{ .Release.Name }}-challenges-isolated
+            - name: KUBECTF_MAX_OWNER_DEPLOYMENTS
+              value: "4"
+            - name: KUBECTF_REGISTRY_PREFIX
+              value: {{ $deployment.registryPrefix }}
+            - name: KUBECTF_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: challenge-manager
+                  key: auth
+            - name: KUBECTF_CONTAINER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: challenge-manager
+                  key: container
+          {{- if $deployment.redis.host }}
+          {{- $redis := (index $deployment "redis") }}
+            - name: REDIS_URL
+              value: "redis{{ if $redis.ca }}s{{ end }}://{{ if $redis.auth }}:{{ $redis.auth }}@{{ end }}{{ $redis.host }}/{{ $redis.db }}"
+          {{- if $redis.ca }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "/ssl/redis.pem"    
+          {{- end }}      
+          {{- end }}
+          
+          {{- if $deployment.oidc.serverUrl }}
+            - name: OIDC_SERVER_URL
+              value: {{ $deployment.oidc.serverUrl }}
+            - name: OIDC_OWNER_ID_FIELD
+              value: {{ $deployment.oidc.ownerIdField }}
+            - name: OIDC_CLIENT_ID
+              value: {{ $deployment.oidc.clientId }}
+          {{- end }}
+          resources:
+{{ toYaml $deployment.quota | indent 12 }}
+          ports:
+          - containerPort: 3000
 ---
 apiVersion: v1
 kind: Service
@@ -71,6 +114,16 @@ spec:
     - port: 3000
 ---
 apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: challenge-manager-strip-api-prefix
+  namespace: {{ .Release.Name }}-management
+spec:
+  stripPrefix:
+    prefixes:
+      - /api
+---
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: challenge-manager
@@ -79,19 +132,19 @@ metadata:
     kube-ctf.downunderctf.com/service: challenge-manager
 spec:
   entryPoints:
-    - web
     - websecure
   tls:
     secretName: {{ .Release.Name }}-cert-management
   routes:
-    - match: Host(`challenge-manager.{{ .Values.domain.management }}`)
+    - match: Host(`instancer.{{ .Values.domain.management }}`) && PathPrefix(`/api/`)
       kind: Rule
       priority: 10
       middlewares:
-      - name: hsts
+        - name: hsts
+        - name: challenge-manager-strip-api-prefix
       services:
-      - name: challenge-manager
-        port: 3000
+        - name: challenge-manager
+          port: 3000
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -118,6 +171,7 @@ rules:
       - secrets
       - networkpolicies
       - configmaps
+      - tlschallenges
     verbs:
       - create
       - delete

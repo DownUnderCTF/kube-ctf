@@ -1,0 +1,72 @@
+{{- $deployment := (index .Values "challenge-manager") }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge-manager-ui
+  namespace: {{ .Release.Name }}-management
+  labels:
+    kube-ctf.downunderctf.com/service: challenge-manager-ui
+spec:
+  replicas: {{ $deployment.replicas }}
+  selector:
+    matchLabels:
+      kube-ctf.downunderctf.com/service: challenge-manager-ui
+  template:
+    metadata:
+      labels:
+        kube-ctf.downunderctf.com/service: challenge-manager-ui
+    spec:
+      containers:
+        - name: challenge-manager-ui
+          image: {{ .Values.registries.infra }}/services/challenge-manager-ui:latest
+          readinessProbe:
+            httpGet:
+              port: 80
+              path: /
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: 80
+              path: /
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+{{ toYaml $deployment.ui_quota | indent 12 }}
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge-manager-ui
+  namespace: {{ .Release.Name }}-management
+  labels:
+    kube-ctf.downunderctf.com/service: challenge-manager-ui
+spec:
+  selector:
+    kube-ctf.downunderctf.com/service: challenge-manager-ui
+  ports:
+    - port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: challenge-manager-ui
+  namespace: {{ .Release.Name }}-management
+  labels:
+    kube-ctf.downunderctf.com/service: challenge-manager-ui
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: {{ .Release.Name }}-cert-management
+  routes:
+    - match: Host(`instancer.{{ .Values.domain.management }}`)
+      kind: Rule
+      priority: 1
+      middlewares:
+        - name: hsts
+      services:
+        - name: challenge-manager-ui
+          port: 80

@@ -28,5 +28,4 @@ spec:
     stsSeconds: 15552000
     forceSTSHeader: true
     stsIncludeSubdomains: true
----
 {{- end }}

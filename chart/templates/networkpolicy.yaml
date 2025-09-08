@@ -35,6 +35,21 @@ spec:
         - 203.0.113.0/24
         - 224.0.0.0/4
         - 240.0.0.0/4
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          app.kubernetes.io/name: traefik
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: traefik
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          app.kubernetes.io/component: aincrad
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: aincrad-fluct
+
 ---
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1

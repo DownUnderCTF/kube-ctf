@@ -44,8 +44,8 @@ spec:
                 cpu: 20m
                 memory: 64Mi
               requests:
-                cpu: 10m
-                memory: 32Mi
+                cpu: 0m
+                memory: 0Mi
             ports:
             - containerPort: 80
               name: port-80
@@ -84,7 +84,6 @@ spec:
         janitor/expires: "{{ expires }}"
     spec:
       entryPoints:
-        - web
         - websecure
       tls:
         certResolver: default
@@ -92,8 +91,6 @@ spec:
         - match: Host(`{{ deployment_id }}.{{ domain }}`)
           kind: Rule
           priority: 10
-          middlewares:
-          - name: secure-headers
           services:
           - name: ctf-{{ deployment_id }}
             port: 80

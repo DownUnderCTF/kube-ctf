@@ -15,32 +15,49 @@ challenge-manager:
   authSecret: keyboard-cat
   containerSecret: keyboard-cat
   registryPrefix: ghcr.io/downunderctf
+  redis:
+    host: ""
+    auth: ""
+    ca: ""
+    db: 0
+  oidc:
+    serverUrl: ""
+    ownerIdField: "noctf.dev/team_id"
+    clientId: ""
   quota:
     limits:
       cpu: 500m
       memory: 1024Mi
     requests:
-      cpu: 125m
+      cpu: 50m
+      memory: 256Mi
+  ui_quota:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
       memory: 256Mi
 
 landing:
   replicas: 3
   quota:
     limits:
-      cpu: 500m
+      cpu: 100m
       memory: 512Mi
     requests:
-      cpu: 50m
+      cpu: 0m
       memory: 256Mi
 
 domain:
   challenges: chal.example.com
+  isolated: iso.example.com
   management: management.example.com
 
 # google project ID
-googleProject: example
-googleRegion: australia-southeast1
-googleRepositoryName: example
+registries:
+  infra: australia-southeast-1-docker.pkg.dev/example/infra
+  challenges: australia-southeast-1-docker.pkg.dev/example/challenges
 
 cert:
   email: email@example.com

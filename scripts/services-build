@@ -13,37 +13,24 @@ PROJECT_ID=`ask_with_default "Project ID" "$PROJECT_ID"`
 REPO_LOCATION=`ask_with_default "AR Repo Location" "$REPO_LOCATION"`
 
 
-gcloud services enable artifactregistry.googleapis.com
-gcloud services enable cloudbuild.googleapis.com
-
-# set +e
-# Check if repo already exists
-# gcloud artifacts repositories describe ${REPO_NAME} \
-#   --location=${REPO_LOCATION} \
-#   --project=${PROJECT_ID}
-
-# set -e
-
-# if [ $? -eq 1 ]
-# then
-#   echo "Creating repo: ${REPO_NAME} in ${REPO_LOCATION}"
-#   # Create artifact registry repo
-#   gcloud artifacts repositories create ${REPO_NAME} \
-#     --repository-format=docker \
-#     --location=${REPO_LOCATION} \
-#     --project=${PROJECT_ID} \
-#     --description="registry for CTF related images" 
-# fi
+gcloud --project="$PROJECT_ID" services enable artifactregistry.googleapis.com
+gcloud --project="$PROJECT_ID" services enable cloudbuild.googleapis.com
 
 
 gcloud builds submit ./services/challenge-manager/ \
   --config ./services/challenge-manager/cloudbuild.yaml \
   --region ${REPO_LOCATION} \
-  --project=${PROJECT_ID} \
+  --project="$PROJECT_ID" \
   --async 
+
+gcloud builds submit ./services/challenge-manager-ui/ \
+  --config ./services/challenge-manager-ui/cloudbuild.yaml \
+  --region ${REPO_LOCATION} \
+  --project="$PROJECT_ID" \
+  --async
 
 gcloud builds submit ./services/landing/ \
   --config ./services/landing/cloudbuild.yaml \
   --region ${REPO_LOCATION} \
-  --project=${PROJECT_ID} \
+  --project="$PROJECT_ID" \
   --async

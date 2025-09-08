@@ -1,5 +1,5 @@
-import {HOST, PORT} from './config';
-import {init} from './server';
+import { HOST, PORT } from "./config";
+import { init } from "./server";
 
 const start = async () => {
   const server = await init();

@@ -11,6 +11,18 @@ spec:
     forceSTSHeader: true
     stsIncludeSubdomains: true
 ---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: ratelimit
+  namespace: {{ $relname }}-{{ . }}
+spec:
+  rateLimit:
+    average: 50
+    burst: 100
+  sourceCriterion:
+    ipStrategy:
+      ipv6Subnet: 56
 {{- end }}
 apiVersion: traefik.io/v1alpha1
 kind: Middleware

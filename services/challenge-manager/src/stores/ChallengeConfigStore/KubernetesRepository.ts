@@ -1,42 +1,43 @@
-import {ChallengeConfigStoreRepository} from '.';
-import {Challenge, KubeIsolatedChallenge} from '../../types/Challenge';
-import {CustomObjectsApi, KubeConfig} from '@kubernetes/client-node';
-import {API_GROUP} from '../../strings';
-import NodeCache from 'node-cache';
+import { ChallengeConfigStoreRepository } from ".";
+import { Challenge } from "../../types/Challenge";
+import { CustomObjectsApi, KubeConfig } from "@kubernetes/client-node";
+import { API_GROUP } from "../../strings";
+import SingleValueCache from "../../util/single_value_cache";
 
 export class KubernetesRepository implements ChallengeConfigStoreRepository {
-  private customObjectsApi: CustomObjectsApi;
+  private readonly customObjectsApi: CustomObjectsApi;
+  private readonly cache = new SingleValueCache(() => this._getAll(), 60000);
 
-  constructor(private cache: NodeCache, cfg: KubeConfig) {
+  constructor(cfg: KubeConfig) {
     this.customObjectsApi = cfg.makeApiClient(CustomObjectsApi);
   }
 
   async get(name: string): Promise<Challenge | null> {
-    let chal: Challenge | null = this.cache.get(name) as unknown as Challenge;
-    if (!chal) {
-      chal = await this._get(name);
-      this.cache.set(name, chal);
-    }
-    return chal;
+    let chal = (await this.cache.get()).get(name);
+    return chal || null;
   }
 
-  private async _get(name: string): Promise<Challenge | null> {
-    return this.customObjectsApi
-      .getClusterCustomObject(API_GROUP, 'v1', 'isolated-challenges', name)
-      .then(response => {
-        const body = response.body as KubeIsolatedChallenge;
-        return {
-          name: body.metadata.name,
-          expires: body.spec.expires,
-          available_at: body.spec.available_at,
-          template: body.spec.template,
-          type: body.spec.type,
-          updated_at: 0,
-        };
-      })
-      .catch(e => {
-        console.error(e.message);
-        return null;
+  private async _getAll(): Promise<Map<string, Challenge>> {
+    let results: { items: any[] };
+    try {
+      results = await this.customObjectsApi.listClusterCustomObject({
+        group: API_GROUP,
+        version: "v1",
+        plural: "isolated-challenges",
       });
+    } catch (e) {
+      console.error("Failed to get all challenges", e);
+      return new Map();
+    }
+
+    const list: Challenge[] = results.items.map((body: any) => ({
+      name: body.metadata.name,
+      expires: body.spec.expires,
+      available_at: body.spec.available_at,
+      template: body.spec.template,
+      type: body.spec.type,
+      updated_at: 0,
+    }));
+    return new Map(list.map((b) => [b.name, b]));
   }
 }

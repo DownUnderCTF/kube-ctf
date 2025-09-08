@@ -1,7 +1,7 @@
-import {Challenge} from '../../types/Challenge';
+import { Challenge } from "../../types/Challenge";
 
 export interface ChallengeConfigStoreRepository {
-  get(name: String): Promise<Challenge | null>;
+  get(name: string): Promise<Challenge | null>;
 }
 
 export class ChallengeConfigStore {
@@ -9,9 +9,9 @@ export class ChallengeConfigStore {
 
   async getChallenge(
     name: string,
-    ignoreAvailableAt = false
+    ignoreAvailableAt = false,
   ): Promise<Challenge | null> {
-    return this.repository.get(name).then(challenge => {
+    return this.repository.get(name).then((challenge) => {
       if (!challenge) return null;
 
       if (

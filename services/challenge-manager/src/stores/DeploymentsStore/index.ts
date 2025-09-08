@@ -2,11 +2,11 @@ import {
   AppsV1Api,
   KubeConfig,
   KubernetesObjectApi,
-} from '@kubernetes/client-node';
-import {Challenge} from '../../types/Challenge';
-import handlebars from 'handlebars';
-import {apply, destroy, generateIdentifier} from './actions';
-import {ISOLATED_CHALLENGE_QUALIFIER} from '../../strings';
+} from "@kubernetes/client-node";
+import { Challenge } from "../../types/Challenge";
+import handlebars from "handlebars";
+import { apply, destroy, generateIdentifier } from "./actions";
+import { ISOLATED_CHALLENGE_QUALIFIER } from "../../strings";
 
 export class DeploymentsStore {
   private apps: AppsV1Api;
@@ -18,7 +18,7 @@ export class DeploymentsStore {
     private domain: string,
     private namespace: string,
     private registryPrefix: string,
-    private secret: string
+    private secret: string,
   ) {
     this.apps = cfg.makeApiClient(AppsV1Api);
     this.objectApi = KubernetesObjectApi.makeApiClient(cfg);
@@ -32,31 +32,23 @@ export class DeploymentsStore {
    */
   async getDeploymentsByOwner(ownerId: string) {
     return (
-      await this.apps.listNamespacedDeployment(
-        this.namespace,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        `${ISOLATED_CHALLENGE_QUALIFIER}/owner=${ownerId}`
-      )
-    ).body.items;
+      await this.apps.listNamespacedDeployment({
+        namespace: this.namespace,
+        labelSelector: `${ISOLATED_CHALLENGE_QUALIFIER}/owner=${ownerId}`,
+      })
+    ).items;
   }
 
   async getDeploymentByNameAndOwner(name: string, ownerId: string) {
     const identifier = generateIdentifier(name, ownerId, this.secret);
-
+    // check if challenge exists
     const items = (
-      await this.apps.listNamespacedDeployment(
-        this.namespace,
-        undefined,
-        undefined,
-        undefined,
-        `metadata.name=ctf-${identifier}`,
-        undefined,
-        1
-      )
-    ).body.items;
+      await this.apps.listNamespacedDeployment({
+        namespace: this.namespace,
+        fieldSelector: `metadata.name=ctf-${identifier}`,
+        limit: 1,
+      })
+    ).items;
     if (items.length === 0) return null;
     return items[0];
   }
@@ -129,7 +121,7 @@ export class DeploymentsStore {
       expires:
         new Date(Date.now() + challenge.expires * 1000)
           .toISOString()
-          .slice(0, -5) + 'Z',
+          .slice(0, -5) + "Z",
     });
     return spec;
   }

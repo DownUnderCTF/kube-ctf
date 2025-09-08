@@ -1,0 +1,100 @@
+apiVersion: kube-ctf.downunderctf.com/v1
+kind: IsolatedChallenge
+metadata:
+  name: sodium
+spec:
+  available_at: 1600000000
+  expires: 3600
+  template: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        janitor/expires: '{{expires}}'
+      labels:
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: '{{deployment_id}}'
+        isolated-challenge.kube-ctf.downunderctf.com/owner: '{{owner_id}}'
+        kube-ctf.downunderctf.com/name: sodium
+        kube-ctf.downunderctf.com/type: web
+      name: ctf-{{deployment_id}}
+      namespace: kubectf-challenges-isolated
+    spec:
+      ports:
+      - name: challenge
+        port: 1337
+        targetPort: 80
+      selector:
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: '{{deployment_id}}'
+        isolated-challenge.kube-ctf.downunderctf.com/owner: '{{owner_id}}'
+        kube-ctf.downunderctf.com/name: sodium
+        kube-ctf.downunderctf.com/type: web
+      type: ClusterIP
+    ---
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations:
+        janitor/expires: '{{expires}}'
+      labels:
+        io.kompose.service: chal
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: '{{deployment_id}}'
+        isolated-challenge.kube-ctf.downunderctf.com/owner: '{{owner_id}}'
+        kube-ctf.downunderctf.com/name: sodium
+        kube-ctf.downunderctf.com/type: web
+      name: ctf-{{deployment_id}}
+      namespace: kubectf-challenges-isolated
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          io.kompose.service: chal
+          isolated-challenge.kube-ctf.downunderctf.com/deployment: '{{deployment_id}}'
+          isolated-challenge.kube-ctf.downunderctf.com/owner: '{{owner_id}}'
+          kube-ctf.downunderctf.com/name: sodium
+          kube-ctf.downunderctf.com/type: web
+      template:
+        metadata:
+          labels:
+            io.kompose.service: chal
+            isolated-challenge.kube-ctf.downunderctf.com/deployment: '{{deployment_id}}'
+            isolated-challenge.kube-ctf.downunderctf.com/owner: '{{owner_id}}'
+            kube-ctf.downunderctf.com/name: sodium
+            kube-ctf.downunderctf.com/type: web
+        spec:
+          automountServiceAccountToken: false
+          containers:
+          - image: {{registry_prefix}}/web-sodium/challenge:latest
+            imagePullPolicy: Always
+            name: challenge
+            ports:
+            - containerPort: 80
+              protocol: TCP
+            resources:
+              limits:
+                cpu: 400m
+                memory: 1024Mi
+              requests:
+                cpu: 100m
+                memory: 256Mi
+            securityContext:
+              privileged: false
+              readOnlyRootFilesystem: false
+          enableServiceLinks: false
+          restartPolicy: Always
+    ---
+    apiVersion: aincrad.ductf.dev/v1
+    kind: TLSChallenge
+    metadata:
+      annotations:
+        janitor/expires: '{{expires}}'
+      labels:
+        isolated-challenge.kube-ctf.downunderctf.com/deployment: '{{deployment_id}}'
+        isolated-challenge.kube-ctf.downunderctf.com/owner: '{{owner_id}}'
+        kube-ctf.downunderctf.com/name: sodium
+        kube-ctf.downunderctf.com/type: web
+      name: {{deployment_id}}
+      namespace: kubectf-challenges-isolated
+    spec:
+      backend: ctf-{{deployment_id}}.kubectf-challenges-isolated.svc.cluster.local:1337
+
+  type: web
